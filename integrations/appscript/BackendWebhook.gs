@@ -54,7 +54,7 @@ function doPost(e) {
     var tokenServicio = "DW-" + Utilities.formatDate(new Date(), "America/Mexico_City", "yyMMdd") + "-" + randomNum;
 
     // 1.5 Procesar en Directorio de Clientes (Deduplicación)
-    var idCliente = procesarDirectorioClientes(
+    var clienteInfo = procesarDirectorioClientes(
       sheetClientes,
       parsed.nombre,
       parsed.whatsapp,
@@ -64,24 +64,25 @@ function doPost(e) {
       fechaCorta
     );
 
-    // 1.6 Timbrar solicitud en DW_Solicitudes
+    // 1.6 Timbrar solicitud en DW_Solicitudes (hereda domicilio/mascotas ya
+    // conocidos del cliente cuando el formulario/chat no trae datos nuevos)
     sheetSolicitudes.appendRow([
       tokenServicio,
       fechaStr,
       "Pendiente",
-      idCliente,
-      parsed.nombre,
+      clienteInfo.id,
+      clienteInfo.nombre,
       parsed.whatsapp,
-      parsed.domicilio,
+      clienteInfo.domicilio,
       parsed.cantMascotas,
-      parsed.razaYTamanio,
+      clienteInfo.mascotas,
       "Sin Asignar"
     ]);
 
     return ContentService.createTextOutput(JSON.stringify({
       result: "success",
       token: tokenServicio,
-      idCliente: idCliente,
+      idCliente: clienteInfo.id,
       dataParsed: parsed
     })).setMimeType(ContentService.MimeType.JSON);
 
@@ -110,6 +111,7 @@ function doGet(e) {
     if (!whatsapp) {
       return ContentService.createTextOutput(JSON.stringify({
         status: "error",
+        encontrado: false,
         mensaje: "Por favor proporciona un número de WhatsApp a 10 dígitos."
       })).setMimeType(ContentService.MimeType.JSON);
     }
@@ -119,9 +121,15 @@ function doGet(e) {
     for (var i = 1; i < data.length; i++) {
       var phoneInSheet = data[i][2].toString().replace(/\D/g, "");
       if (phoneInSheet === whatsapp) {
+        var nombreCliente = data[i][1] || "Cliente";
+        var mascotasCliente = data[i][5] || "tus mascotas";
+        var ultimaVisitaCliente = data[i][7] ? Utilities.formatDate(new Date(data[i][7]), "America/Mexico_City", "dd/MM/yyyy") : "N/D";
+        var mensajePersonalizado = "Claro, eres " + nombreCliente + ". Tu último servicio fue el " + ultimaVisitaCliente + " y solicitaste servicio para " + mascotasCliente + ".";
+
         return ContentService.createTextOutput(JSON.stringify({
           status: "encontrado",
-          mensaje: "Cliente registrado en sistema.",
+          encontrado: true,
+          mensaje: mensajePersonalizado,
           idCliente: data[i][0],
           nombre: data[i][1],
           whatsapp: data[i][2],
@@ -135,12 +143,14 @@ function doGet(e) {
 
     return ContentService.createTextOutput(JSON.stringify({
       status: "nuevo",
+      encontrado: false,
       mensaje: "No se encontró registro previo con este número."
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({
       status: "error",
+      encontrado: false,
       error: err.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -168,36 +178,37 @@ function parseJotformPayload(data) {
     var k = key.toLowerCase();
 
     // 1. WhatsApp
-    if (!result.whatsapp && (k.indexOf("phone") !== -1 || k.indexOf("whats") !== -1 || k.indexOf("tel") !== -1 || k.indexOf("q1") !== -1)) {
+    if (!result.whatsapp && (k.indexOf("phone") !== -1 || k.indexOf("whats") !== -1 || k.indexOf("tel") !== -1)) {
       var cleanPhone = typeof val === "object" ? (val.full || JSON.stringify(val)) : val.toString();
       cleanPhone = cleanPhone.replace(/\D/g, "");
       if (cleanPhone.length >= 10) result.whatsapp = cleanPhone.slice(-10);
     }
 
     // 2. Cantidad de Mascotas
-    if (result.cantMascotas === "1" && (k.indexOf("enano") !== -1 || k.indexOf("cant") !== -1 || k.indexOf("numero") !== -1 || k.indexOf("mascota") !== -1 || k.indexOf("q2") !== -1)) {
+    if (result.cantMascotas === "1" && (k.indexOf("enano") !== -1 || k.indexOf("cant") !== -1 || k.indexOf("numero") !== -1 || k.indexOf("mascota") !== -1)) {
       var cantStr = val.toString().trim();
       var matchNum = cantStr.match(/\d+/);
       result.cantMascotas = matchNum ? matchNum[0] : cantStr;
     }
 
     // 3. Raza / Tamaño
-    if (result.razaYTamanio === "Por confirmar en llamada" && (k.indexOf("raza") !== -1 || k.indexOf("tamano") !== -1 || k.indexOf("tamanio") !== -1 || k.indexOf("q3") !== -1)) {
+    if (result.razaYTamanio === "Por confirmar en llamada" && typeof val !== "object" && (k.indexOf("raza") !== -1 || k.indexOf("tamano") !== -1 || k.indexOf("tamanio") !== -1)) {
       result.razaYTamanio = val.toString().trim();
     }
 
     // 4. Domicilio / Dirección
-    if (result.domicilio === "No especificado" && (k.indexOf("direcc") !== -1 || k.indexOf("domicilio") !== -1 || k.indexOf("address") !== -1 || k.indexOf("q4") !== -1)) {
+    if (result.domicilio === "No especificado" && (k.indexOf("direcc") !== -1 || k.indexOf("domicilio") !== -1 || k.indexOf("address") !== -1)) {
       if (typeof val === "object") {
         var parts = [];
         if (val.addr_line1) parts.push(val.addr_line1);
         if (val.addr_line2) parts.push(val.addr_line2);
         if (val.city) parts.push(val.city);
+        if (val.state) parts.push(val.state);
         if (val.postal) parts.push("CP " + val.postal);
         if (parts.length === 0 && Array.isArray(val)) {
           parts = val.filter(function(item) { return item && typeof item === "string"; });
         }
-        result.domicilio = parts.join(", ");
+        if (parts.length > 0) result.domicilio = parts.join(", ");
       } else {
         result.domicilio = val.toString().replace(/[\r\n]+/g, ", ").trim();
       }
@@ -205,7 +216,12 @@ function parseJotformPayload(data) {
 
     // 5. Nombre
     if (result.nombre === "Cliente por Confirmar" && (k.indexOf("nombre") !== -1 || k.indexOf("name") !== -1 || k.indexOf("fullname") !== -1)) {
-      result.nombre = (val.first ? val.first + " " + (val.last || "") : val).toString().trim();
+      if (typeof val === "object") {
+        var fullName = ((val.first || "") + " " + (val.last || "")).trim();
+        if (fullName) result.nombre = fullName;
+      } else {
+        result.nombre = val.toString().trim();
+      }
     }
   }
 
@@ -253,7 +269,12 @@ function procesarDirectorioClientes(sheet, nombre, whatsapp, telSecundario, domi
       var nuevoHistorial = mascotasPrevias ? mascotasPrevias + " | " + razaYTamanio : razaYTamanio;
       sheet.getRange(rowIndex, 6).setValue(nuevoHistorial);
     }
-    return idClienteExistente;
+    return {
+      id: idClienteExistente,
+      nombre: data[rowIndex - 1][1] || nombre,
+      domicilio: domicilio !== "No especificado" ? domicilio : (data[rowIndex - 1][4] || domicilio),
+      mascotas: razaYTamanio !== "Por confirmar en llamada" ? razaYTamanio : (mascotasPrevias || razaYTamanio)
+    };
   } else {
     var countClientes = data.length;
     var nuevoId = "CLI-" + (whatsapp !== "" ? whatsapp.slice(-4) : "0000") + "-" + (countClientes < 10 ? "0" + countClientes : countClientes);
@@ -267,6 +288,6 @@ function procesarDirectorioClientes(sheet, nombre, whatsapp, telSecundario, domi
       1,
       fechaCorta
     ]);
-    return nuevoId;
+    return { id: nuevoId, nombre: nombre, domicilio: domicilio, mascotas: razaYTamanio };
   }
 }
