@@ -16,3 +16,11 @@
   2. Mascota, Raza y Tamaño aproximado.
   3. Dirección completa y Colonia.
   4. Servicio solicitado (Baño, Baño + Corte).
+
+## Integración y seguimiento
+
+- Jotform AI Agent es la puerta de captura y orientación; Google Apps Script procesa la información y Google Sheets ("La Biblia") es la fuente de verdad.
+- Cada nueva solicitud debe conservar su `Token_Servicio` para permitir seguimiento posterior.
+- `/verificar-token` es una superficie de consulta para clientes y una zona de operación para personal autorizado; no es la fuente de datos.
+- La actualización de estatus debe validarse con autorización del operador y reflejarse en la hoja de solicitudes.
+- Los detalles del contrato Jotform/GAS y sus dependencias se mantienen en `.context/INTEGRATIONS_JOTFORM_AI.md`.

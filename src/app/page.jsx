@@ -9,15 +9,21 @@ export default function HomePage() {
           <span className="text-2xl font-black tracking-tight text-white">
             PET GROUP <span className="text-amber-400">BAJÍO</span>
           </span>
-          <nav className="flex items-center gap-4 text-sm font-medium">
-            <Link href="/doggy-wash" className="bg-sky-500 hover:bg-sky-400 text-white px-4 py-2 rounded-full transition shadow-lg shadow-sky-500/20 font-bold">
-              Estética Doggy Wash
-            </Link>
+          <nav className="flex items-center gap-3 text-sm font-medium">
+            {Object.values(BRANDS).slice(0, 2).map((brand) => (
+              <Link
+                key={brand.id}
+                href={brand.slug.startsWith("http") ? brand.slug : brand.slug}
+                className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-full transition border border-slate-700"
+              >
+                {brand.name}
+              </Link>
+            ))}
           </nav>
         </div>
       </header>
 
-      <section className="max-w-5xl mx-auto px-4 py-16 text-center">
+      <section className="max-w-6xl mx-auto px-4 py-16 text-center">
         <span className="inline-block px-3 py-1 bg-amber-400/10 text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-amber-400/20">
           Consorcio Integral de Bienestar Animal · León, Gto.
         </span>
@@ -28,42 +34,54 @@ export default function HomePage() {
           Desde estética canina a domicilio y atención clínica, hasta hospedaje de primer nivel y servicios conmemorativos.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
-          {Object.values(BRANDS).map((brand) => (
-            <div
-              key={brand.id}
-              className="p-6 rounded-2xl bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 transition flex flex-col justify-between group"
-            >
-              <div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-700 text-slate-300 mb-3 inline-block">
-                  {brand.badge}
-                </span>
-                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-amber-400 transition">
-                  {brand.name}
-                </h3>
-                <p className="text-sm font-medium text-slate-300 mb-2">{brand.tagline}</p>
-                <p className="text-xs text-slate-400 leading-relaxed mb-6">{brand.description}</p>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left">
+          {Object.values(BRANDS).map((brand) => {
+            const isExternalLink = brand.slug.startsWith("http");
 
-              {brand.slug.startsWith("http") ? (
-                <a
-                  href={brand.slug}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-semibold text-slate-300 hover:text-white flex items-center gap-1"
-                >
-                  Visitar portal oficial &rarr;
-                </a>
-              ) : (
-                <Link
-                  href={brand.slug}
-                  className="text-sm font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1"
-                >
-                  Conocer servicios &rarr;
-                </Link>
-              )}
-            </div>
-          ))}
+            return (
+              <div
+                key={brand.id}
+                className="p-6 rounded-2xl bg-slate-800/60 border border-slate-700/60 hover:border-slate-500 transition flex flex-col justify-between group h-full"
+                style={{ boxShadow: `0 20px 30px -20px ${brand.color || "#334155"}` }}
+              >
+                <div>
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded mb-3 inline-block border"
+                    style={{
+                      backgroundColor: `${brand.color || "#334155"}22`,
+                      color: brand.color || "#e2e8f0",
+                      borderColor: `${brand.color || "#334155"}44`,
+                    }}
+                  >
+                    {brand.badge}
+                  </span>
+                  <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-amber-400 transition">
+                    {brand.name}
+                  </h3>
+                  <p className="text-sm font-medium text-slate-300 mb-2">{brand.tagline}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed mb-6">{brand.description}</p>
+                </div>
+
+                {isExternalLink ? (
+                  <a
+                    href={brand.slug}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-slate-300 hover:text-white flex items-center gap-1"
+                  >
+                    Visitar portal oficial &rarr;
+                  </a>
+                ) : (
+                  <Link
+                    href={brand.slug}
+                    className="text-sm font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1"
+                  >
+                    Conocer servicios &rarr;
+                  </Link>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
