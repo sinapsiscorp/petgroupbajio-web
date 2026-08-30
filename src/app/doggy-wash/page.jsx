@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Script from "next/script";
 import { BRANDS } from "@/lib/constants";
 
 export default function DoggyWashPage() {
@@ -7,10 +6,6 @@ export default function DoggyWashPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between font-sans">
-      <Script
-        src="https://cdn.jotfor.ms/agent/embedjs/019ca04a1f7e7a6a92321eceb3ba72e8ae01/embed.js"
-        strategy="afterInteractive"
-      />
       <nav className="border-b border-slate-800 bg-slate-900/80 px-4 h-16 flex items-center justify-between max-w-6xl mx-auto w-full sticky top-0 z-50">
         <Link href="/" className="text-sm text-slate-400 hover:text-white flex items-center gap-1 font-medium">
           &larr; Volver al Hub Pet Group

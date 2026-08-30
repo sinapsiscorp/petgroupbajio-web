@@ -9,17 +9,6 @@ export default function HomePage() {
           <span className="text-2xl font-black tracking-tight text-white">
             PET GROUP <span className="text-amber-400">BAJÍO</span>
           </span>
-          <nav className="flex items-center gap-3 text-sm font-medium">
-            {Object.values(BRANDS).slice(0, 2).map((brand) => (
-              <Link
-                key={brand.id}
-                href={brand.slug.startsWith("http") ? brand.slug : brand.slug}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-full transition border border-slate-700"
-              >
-                {brand.name}
-              </Link>
-            ))}
-          </nav>
         </div>
       </header>
 
