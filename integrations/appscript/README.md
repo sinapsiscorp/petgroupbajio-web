@@ -8,10 +8,18 @@ Este archivo vive en dos lugares que **deben mantenerse idénticos**:
 - `integrations/appscript/BackendWebhook.gs` (repo — fuente de verdad versionada)
 - El editor de Apps Script vinculado al Sheet real (`Sample.gs` en el Drive del usuario) — **es el único que Jotform ejecuta**. Cualquier cambio aquí debe copiarse manualmente allá y volver a implementarse (Implementar → Administrar implementaciones → Editar → Versión → Nueva versión → Implementar) para que tome efecto en la URL pública.
 
+## ⚠️ Advertencia — no reescribir este script sin verificar el payload real
+
+**2026-08-30, incidente:** una asistencia externa (Copilot/Gemini, vía un "Technical Brief" con código fuente completo) reescribió `Sample.gs` desde cero, agregando funcionalidad razonable (cruce con `DW_Solicitudes` para nombre de mascotas, esquema de 15 columnas, separación de fuente form-vs-chat) pero **reintrodujo el mismo bug que ya habíamos diagnosticado y resuelto**: usar `extractField(data, ["whatsapp", "q1_phone", ...])` con **coincidencia exacta de llave**, en vez de búsqueda por palabra clave (`indexOf`) sobre las llaves reales y compuestas que genera Jotform (`q4_q1_phone`, `q73_q2_numero_mascotas`, `q90_q3_raza_tamano`, `q51_q4_domicilio` — ver ejemplo abajo). Ninguna llave exacta coincidía, así que todo el formulario volvió a caer en los defaults ("No especificado", "Por confirmar en llamada", etc.), y encima `detectPostSource` clasificaba mal el payload del formulario como `"chat_recurrent"` por no encontrar esas mismas llaves, agravando el fallo.
+
+**Se revirtió** `Sample.gs` a la última versión funcional (idéntica a la de este repo). El código de Copilot no llegó a tocar `BackendWebhook.gs` en el repo, así que ambos ya vuelven a estar sincronizados.
+
+**Regla para cualquier cambio futuro al parser:** antes de tocar `parseJotformPayload` (o cualquier extractor de campos), confirmar contra `Debug_Logs` (o el ejemplo de payload real más abajo) qué llaves manda Jotform *de verdad* — nunca asumir nombres de campo "limpios" tipo `whatsapp`/`domicilio`/`q1_phone`. Jotform antepone el widget ID (`qN_`) al nombre semántico del campo, y ese ID varía por formulario/edición, por lo que la única estrategia robusta es `indexOf` sobre palabras clave, no coincidencia exacta.
+
 ## Estado actual (2026-08-30): funcional al 100%, con 1 pendiente menor
 
 ### Resuelto — Sincronización de scripts
-El documento real (`Sample.gs`) estaba desactualizado respecto al repo: usaba `extractField` con llaves exactas fijas (`q1_phone`, `q2_numero_mascotas`, etc.) que no coincidían con las llaves reales que genera Jotform (`q4_q1_phone`, `q73_q2_numero_mascotas`, `q90_q3_raza_tamano`, `q51_q4_domicilio`). Además no tenía la pestaña `Debug_Logs`, lo que impedía diagnosticar. Se igualó `Sample.gs` al contenido del repo.
+El documento real (`Sample.gs`) estaba desactualizado respecto al repo: usaba `extractField` con llaves exactas fijas (`q1_phone`, `q2_numero_mascotas`, etc.) que no coincidían con las llaves reales que genera Jotform. Además no tenía la pestaña `Debug_Logs`, lo que impedía diagnosticar. Se igualó `Sample.gs` al contenido del repo. (Este mismo bug se repitió una segunda vez el mismo día vía el incidente de Copilot descrito arriba, y se corrigió de la misma forma: revirtiendo a la versión con búsqueda por palabra clave.)
 
 ### Resuelto — Cruce de llaves en el parser (`parseJotformPayload`)
 Los filtros `k.indexOf("q1"/"q2"/"q3"/"q4")` provocaban falsos positivos: p. ej. `q4_q1_phone` contiene el substring `"q4"`, así que la llave de teléfono también entraba al bloque de domicilio y lo pisaba con un valor vacío antes de que la llave real (`q51_q4_domicilio`) pudiera aplicarse. Se eliminaron esos checks por número de pregunta; ahora cada campo se identifica solo por palabra clave semántica (`phone`/`whats`/`tel`, `enano`/`cant`/`numero`/`mascota`, `raza`/`tamano`, `direcc`/`domicilio`/`address`), que sí es específica con las llaves reales del formulario.
@@ -31,11 +39,11 @@ Antes, si un cliente ya identificado pedía seguimiento vía chat sin repetir do
 ### ⚠️ Pendiente — El chat no confirma la solicitud al cliente tras el POST
 **Síntoma:** al ejecutar la herramienta POST desde el chatbot, la fila se inserta correctamente en `DW_Solicitudes` (confirmado en Sheets) y el `doGet` previo sí devuelve y muestra el `mensaje` de identificación del cliente — pero después de eso el chat se queda estático: no le informa al cliente que su solicitud fue registrada ni que Karina/Dulce lo contactarán en breve.
 
-**Diagnóstico parcial:** en las pruebas manuales con `curl` contra la URL del webhook, la respuesta del POST se recibe como HTML (página intermedia de Google, no el JSON esperado) a pesar de que "Quién tiene acceso" ya está en "Cualquier persona". El acceso desde Sheets confirma que el `doPost` sí se ejecuta y sí escribe la fila, así que no es un bloqueo total — probablemente la respuesta JSON no está llegando de vuelta al agente de Jotform de forma que este la pueda leer y actuar sobre ella (a diferencia del GET, que si funciona end-to-end incluyendo el mensaje de vuelta).
+**Diagnóstico parcial:** en las pruebas manuales con `curl` contra la URL del webhook, la respuesta del POST se recibe como HTML (página intermedia de Google, no el JSON esperado) a pesar de que "Quién tiene acceso" ya está en "Cualquier persona". El acceso desde Sheets confirma que el `doPost` sí se ejecuta y sí escribe la fila, así que no es un bloqueo total — probablemente la respuesta JSON no está llegando de vuelta al agente de Jotform de forma que este la pueda leer y actuar sobre ella (a diferencia del GET, que sí funciona end-to-end incluyendo el mensaje de vuelta).
 
 **Próximo paso:** revisar en la herramienta POST de Jotform si tiene configurado un "Mensaje de ejecución de la API" con una variable dinámica del campo de respuesta (igual que se hizo para el GET con `{{mensaje}}`), y agregar una instrucción explícita al agente para que, tras ejecutar el POST exitosamente, le confirme al cliente: *"Listo, tu solicitud quedó registrada. En breve Karina o Dulce te contactarán para confirmar los detalles."* — sin depender de que el chatbot interprete la respuesta cruda del POST.
 
-## Payload real observado desde Jotform (referencia para futuros ajustes de parser)
+## Payload real observado desde Jotform (referencia obligatoria para futuros ajustes de parser)
 
 Ejemplo de llaves reales que manda el formulario (vía `rawRequest`):
 
@@ -54,6 +62,8 @@ Ejemplo de llaves reales que manda el formulario (vía `rawRequest`):
   }
 }
 ```
+
+Nota los prefijos `qN_` variables antepuestos al nombre semántico del campo (`q4_q1_phone`, no `q1_phone`; `q51_q4_domicilio`, no `q4_domicilio`) — cualquier extractor que use coincidencia exacta de llave fallará contra este payload.
 
 ## Estructura de Sheets
 
@@ -83,3 +93,12 @@ Ejemplo de llaves reales que manda el formulario (vía `rawRequest`):
 - Parámetro mínimo: key `whatsapp` (mismo prompt que en GET)
 - Opcional: keys `cant_mascotas` / `direccion` con prompt "solo si el cliente menciona un cambio para este servicio, si no, deja vacío" — el backend hereda del Directorio si no llegan.
 - **Pendiente de completar la confirmación al cliente tras la ejecución** (ver sección de pendientes arriba).
+
+## Propuestas no implementadas (del brief de Copilot, 2026-08-30)
+
+El brief incluía dos ideas de producto razonables que no se implementaron por venir junto con el bug de matching, pero que valen la pena retomar **por separado**, ya verificadas contra el payload real y con el fix de `indexOf` aplicado:
+
+- **Esquema de 15 columnas en `DW_Solicitudes`** (agregar `Nombre_Mascotas`, `Importe_Cotizado`, `Importe_Cobrado`, `Medio_Pago`, `Fecha_Pago` para captura manual de Karina/Dulce).
+- **GET enriquecido cruzando `DW_Solicitudes`** para devolver el nombre real de las mascotas de la última solicitud, no solo la descripción general del Directorio.
+
+Si se retoman, aplicar el mismo principio: usar `indexOf` por palabra clave para cualquier extracción de campo nuevo, y probar contra un payload real capturado en `Debug_Logs` antes de dar por buena la implementación.
