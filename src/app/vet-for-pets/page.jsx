@@ -110,7 +110,7 @@ const SERVICES = [
 const CLINICAL_PILLARS = [
   {
     title: '1. Dirección Médica de Alto Nivel',
-    desc: 'Bajo la supervisión del Dr. Eusebio Lozano Bedia, cada diagnóstico y tratamiento se apega a rigurosos estándares médicos, éticos y científicos consolidados a lo largo de más de una década en León.',
+    desc: 'Bajo dirección médica veterinaria certificada, cada diagnóstico y tratamiento se apega a rigurosos estándares médicos, éticos y científicos consolidados a lo largo de más de una década en León.',
   },
   {
     title: '2. Sinergia Total con Pet Hotel & Doggy Wash',
@@ -129,7 +129,7 @@ const CLINICAL_PILLARS = [
 const COMPARISON_POINTS = [
   {
     feature: 'Respaldo Médico & Trayectoria',
-    vetForPets: 'Más de 15 años de liderazgo clínico bajo la dirección del Dr. Eusebio Lozano.',
+    vetForPets: 'Más de 15 años de liderazgo clínico bajo dirección médica certificada.',
     informal: 'Consultorios improvisados sin dirección médica certificada ni experiencia comprobable.',
   },
   {
@@ -212,7 +212,7 @@ export default function VetForPetsPage() {
                     VET FOR <span className="text-[#06B6D4]">PETS</span>
                   </span>
                   <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Clínica Veterinaria &amp; Pet Shop · León, Gto.
+                    Clínica Veterinaria y Pet Shop · León, Gto.
                   </span>
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function VetForPetsPage() {
               </h1>
 
               <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg lg:mx-0">
-                Diagnóstico clínico certero, quirófano estéril, medicina preventiva y farmacia especializada bajo la dirección médica del Dr. Eusebio Lozano Bedia en León, Guanajuato.
+                Diagnóstico clínico certero, quirófano estéril, medicina preventiva y farmacia especializada bajo dirección médica certificada en León, Guanajuato.
               </p>
 
               <div className="my-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
@@ -284,7 +284,7 @@ export default function VetForPetsPage() {
                 <div className="mb-3 flex items-center gap-2">
                   <span className="font-bold text-cyan-400">📌</span>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-cyan-300">
-                    Información de Consulta &amp; Ubicación
+                    Información de Consulta y Ubicación
                   </span>
                 </div>
                 <ul className="space-y-2 text-xs leading-relaxed text-slate-300">
@@ -326,7 +326,7 @@ export default function VetForPetsPage() {
                       <span className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="text-xs font-bold text-slate-800">Dirección Médica Titulada</span>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#06B6D4]">Dr. Eusebio Lozano</span>
+                    <span className="text-[11px] font-semibold text-[#06B6D4]">Certificación Vigente</span>
                   </div>
                 </div>
               </div>
@@ -397,7 +397,7 @@ export default function VetForPetsPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <span className="rounded-full border border-cyan-500/30 bg-cyan-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-300">
-              Excelencia &amp; Gobernanza Médica
+              Excelencia y Gobernanza Médica
             </span>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
               ¿Por qué confiar en Vet for Pets?
@@ -488,7 +488,7 @@ export default function VetForPetsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <span className="rounded-full border border-cyan-200 bg-cyan-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-900">
-              Flujo Ágil &amp; Organizado
+              Flujo Ágil y Organizado
             </span>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
               ¿Cómo solicitar consulta médica o atención?
@@ -560,7 +560,7 @@ export default function VetForPetsPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-[#06B6D4]">
-              Dudas Médicas &amp; Servicios
+              Dudas Médicas y Servicios
             </span>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
               Preguntas Frecuentes sobre Vet for Pets
@@ -631,10 +631,10 @@ export default function VetForPetsPage() {
                 Servicios Médicos
               </h4>
               <ul className="space-y-2 font-medium">
-                <li><a href="#servicios" className="transition-colors hover:text-white">Consulta &amp; Diagnóstico</a></li>
-                <li><a href="#servicios" className="transition-colors hover:text-white">Cirugía &amp; Quirófano</a></li>
-                <li><a href="#servicios" className="transition-colors hover:text-white">Vacunación &amp; Desparasitación</a></li>
-                <li><a href="#servicios" className="transition-colors hover:text-white">Boutique &amp; Pet Shop</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Consulta y Diagnóstico</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Cirugía y Quirófano</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Vacunación y Desparasitación</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Boutique y Pet Shop</a></li>
               </ul>
             </div>
 
@@ -652,9 +652,9 @@ export default function VetForPetsPage() {
 
             <div>
               <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-white">
-                Horarios &amp; Contacto
+                Horarios y Contacto
               </h4>
-              <p className="mb-1 font-semibold text-slate-300">Atención Clínica &amp; Mostrador:</p>
+              <p className="mb-1 font-semibold text-slate-300">Atención Clínica y Mostrador:</p>
               <p className="mb-2 leading-relaxed text-slate-400">
                 Lun a Vie: 9:00 am - 7:00 pm<br />
                 Sáb: 9:00 am - 3:00 pm

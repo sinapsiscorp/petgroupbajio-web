@@ -31,7 +31,7 @@ export const BRAND_CONTACTS = {
     instagram: process.env.NEXT_PUBLIC_IG_DOGGY_WASH || "https://www.instagram.com/doggy_wash_bajio/",
   },
   vetForPets: {
-    whatsapp: process.env.NEXT_PUBLIC_WA_VET_FOR_PETS || "524777175762",
+    whatsapp: process.env.NEXT_PUBLIC_WA_VET_FOR_PETS || "524775763512",
     phone: process.env.NEXT_PUBLIC_PHONE_VET_FOR_PETS || "524777175762",
     email: process.env.NEXT_PUBLIC_EMAIL_VET_FOR_PETS || "vetforpets@petgroupbajio.com",
     website: process.env.NEXT_PUBLIC_SITE_VET_FOR_PETS || "https://petgroupbajio.com/vet-for-pets",

@@ -216,7 +216,7 @@ export default function DoggyWashPage() {
                     DOGGY <span className="text-[#78BE20]">WASH</span>
                   </span>
                   <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Spa Móvil en tu Puerta · León, Gto.
+                    Baño y Estética en tu Puerta · León, Gto.
                   </span>
                 </div>
               </div>

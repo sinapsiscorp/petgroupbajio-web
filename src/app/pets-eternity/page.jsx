@@ -74,13 +74,13 @@ includes: [
 },
 {
 id: 'recoleccion-traslado',
-name: 'Recolección & Traslado Sensible 24/7',
+name: 'Recolección & Traslado Sensible',
 tagline: 'Respuesta inmediata a domicilio o clínica',
-badge: 'Guardia 24 Horas',
+badge: 'Guardia Extendida',
 badgeColor: 'bg-slate-200 text-slate-800 border-slate-300',
 description: 'Unidades de transporte especiales acondicionadas con respeto y dignidad para el retiro inmediato de tu mascota en cualquier punto de León, clínicas veterinarias o zona metropolitana.',
 includes: [
-'Disponibilidad de guardia inmediata las 24 horas, los 365 días',
+'Disponibilidad de guardia de 8:30 am a 10:00 pm, los 365 días',
 'Recolección en domicilio particular o cualquier hospital veterinario',
 'Manejo amoroso, ético y protocolario del cuerpo',
 'Custodia en cámara fría hasta la ceremonia pactada',
@@ -126,12 +126,12 @@ desc: 'Disponemos de un espacio sereno y cálido fuera del entorno ruidoso de la
 const COMPARISON_POINTS = [
 {
 feature: 'Garantía de Cenizas',
-petsEternity: 'Cremación 100% individual verificable con entrega exclusiva y certificado oficial.',
+petsEternity: 'Cremación 100% individual supervisada con entrega exclusiva y certificado oficial.',
 informal: 'Procesos comunitarios opacos donde se mezclan restos sin certeza ni trazabilidad.'
 },
 {
 feature: 'Disponibilidad & Traslado',
-petsEternity: 'Línea de guardia 24/7 con recolección a domicilio o veterinaria en unidades dignas.',
+petsEternity: 'Línea de guardia de 8:30 am a 10:00 pm con recolección a domicilio o veterinaria en unidades dignas.',
 informal: 'Horarios limitados de oficina o traslados improvisados en vehículos particulares.'
 },
 {
@@ -166,7 +166,7 @@ a: 'Las tarifas se basan en el peso exacto de la mascota (báscula de precisión
 },
 {
 q: '¿En qué horarios puedo comunicarme en caso de una emergencia?',
-a: 'Nuestras oficinas y salas de atención operan de Lunes a Domingo de 8:00 am a 9:30 pm. No obstante, nuestro servicio de recolección, traslado de urgencia y línea de acompañamiento telefónico se encuentra disponible las 24 horas del día, los 365 días del año.'
+a: 'Nuestras oficinas, salas de atención, línea de acompañamiento telefónico y servicio de recolección o traslado de urgencia operan de Lunes a Domingo de 8:30 am a 10:00 pm, los 365 días del año.'
 },
 {
 q: '¿Cómo funciona el servicio de Último Adiós en Casa?',
@@ -209,7 +209,7 @@ export default function PetsEternityPage() {
                     PETS&apos; <span className="text-[#C5A880]">ETERNITY</span>
                   </span>
                   <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                    Homenajes &amp; Crematorio 24/7 · León, Gto.
+                    Homenajes y Crematorio 24/7 · León, Gto.
                   </span>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export default function PetsEternityPage() {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5B7B8C] px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-500/25 transition-all hover:bg-[#486372] sm:w-auto"
                 >
                   <span>💬</span>
-                  <span>Contactar Línea de Apoyo 24/7</span>
+                  <span>Contactar Línea de Apoyo</span>
                 </a>
 
                 <a
@@ -273,7 +273,7 @@ export default function PetsEternityPage() {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-stone-300 bg-stone-100 px-6 py-3.5 text-sm font-bold text-stone-800 transition-all hover:bg-stone-200 sm:w-auto"
                 >
                   <span>🕊️</span>
-                  <span>Servicios &amp; Planes Conmemorativos</span>
+                  <span>Servicios y Planes Conmemorativos</span>
                 </a>
               </div>
 
@@ -281,26 +281,26 @@ export default function PetsEternityPage() {
                 <div className="mb-3 flex items-center gap-2">
                   <span className="font-bold text-[#C5A880]">📌</span>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-amber-200">
-                    Información de Guardia &amp; Traslados
+                    Información de Guardia y Traslados
                   </span>
                 </div>
                 <ul className="space-y-2 text-xs leading-relaxed text-slate-300">
                   <li className="flex items-start gap-2">
                     <span className="font-bold text-[#C5A880]">•</span>
                     <span>
-                      <strong>Atención de Urgencias:</strong> Guardia telefónica y unidades de recolección operando las <strong>24 horas</strong>.
+                      <strong>Atención de Urgencias:</strong> Guardia telefónica y unidades de recolección operando de <strong>8:30 am a 10:00 pm</strong>, los 365 días.
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="font-bold text-[#C5A880]">•</span>
                     <span>
-                      <strong>Horario de Oficinas:</strong> Lunes a Domingo de 8:00 am a 9:30 pm (Paseo de los Insurgentes 321, Los Paraísos).
+                      <strong>Horario de Atención:</strong> Lunes a Domingo de 8:30 am a 10:00 pm (Paseo de los Insurgentes 321, Los Paraísos).
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="font-bold text-[#C5A880]">•</span>
                     <span>
-                      <strong>Tarifas Transparentes:</strong> Planes individuales desde $1,300 MXN en urna tradicional según peso y especie.
+                      <strong>Tarifas Flexibles:</strong> Planes individuales desde $1,300 MXN según peso, especie y material de urna.
                     </span>
                   </li>
                 </ul>
@@ -321,9 +321,9 @@ export default function PetsEternityPage() {
                   <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-xl border border-stone-200 bg-white/95 p-3 shadow-lg backdrop-blur-md">
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-xs font-bold text-slate-800">Cremación Individual Certificada</span>
+                      <span className="text-xs font-bold text-slate-800">Cremación Individual Supervisada</span>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#5B7B8C]">Guardia 24/7 Activa</span>
+                    <span className="text-[11px] font-semibold text-[#5B7B8C]">Guardia Activa</span>
                   </div>
                 </div>
               </div>
@@ -394,7 +394,7 @@ export default function PetsEternityPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <span className="rounded-full border border-[#5B7B8C]/60 bg-[#5B7B8C]/40 px-3 py-1 text-xs font-bold uppercase tracking-wide text-stone-200">
-              Ética, Transparencia &amp; Contención
+              Ética, Transparencia y Contención
             </span>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
               ¿Por qué confiar en Pets&apos; Eternity?
@@ -450,7 +450,7 @@ export default function PetsEternityPage() {
               La Diferencia Pets&apos; Eternity
             </span>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-              Diferencias de Atención &amp; Respaldo Ético
+              Diferencias de Atención y Respaldo Ético
             </h2>
           </div>
 
@@ -458,7 +458,7 @@ export default function PetsEternityPage() {
             <table className="w-full border-collapse text-left text-xs sm:text-sm">
               <thead>
                 <tr className="bg-slate-900 text-white">
-                  <th className="p-4 font-bold">Criterio Ético &amp; Operativo</th>
+                  <th className="p-4 font-bold">Criterio Ético y Operativo</th>
                   <th className="bg-slate-800 p-4 font-bold text-[#C5A880]">Pets&apos; Eternity (Servicio Certificado)</th>
                   <th className="p-4 font-bold text-slate-400">Servicio Informal / Sin Trazabilidad</th>
                 </tr>
@@ -487,7 +487,7 @@ export default function PetsEternityPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <span className="rounded-full border border-stone-300 bg-stone-200 px-3 py-1 text-xs font-bold uppercase tracking-wide text-stone-800">
-              Flujo Transparente &amp; Respetuoso
+              Flujo Transparente y Respetuoso
             </span>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
               ¿Cómo atendemos tu llamado en 4 sencillos pasos?
@@ -499,7 +499,7 @@ export default function PetsEternityPage() {
               {
                 step: '01',
                 title: 'Contacto Inmediato',
-                desc: 'Nos llamas o escribes por WhatsApp las 24 horas para coordinar el retiro a domicilio o en la clínica veterinaria.',
+                desc: 'Nos llamas o escribes por WhatsApp de 8:30 am a 10:00 pm para coordinar el retiro a domicilio o en la clínica veterinaria.',
               },
               {
                 step: '02',
@@ -508,7 +508,7 @@ export default function PetsEternityPage() {
               },
               {
                 step: '03',
-                title: 'Ceremonia &amp; Cremación',
+                title: 'Ceremonia y Cremación',
                 desc: 'Se realiza el proceso individual en horno exclusivo, recuperando sus cenizas con certificado notariado y mechón de pelo.',
               },
               {
@@ -532,7 +532,7 @@ export default function PetsEternityPage() {
               ¿Requieres asistencia conmemorativa inmediata?
             </h3>
             <p className="mb-6 text-xs text-stone-600 sm:text-sm">
-              Estamos contigo en cada momento. Comunícate directamente con nuestra guardia de atención 24/7.
+              Estamos contigo en cada momento. Comunícate directamente con nuestra guardia de atención de 8:30 am a 10:00 pm.
             </p>
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
@@ -559,7 +559,7 @@ export default function PetsEternityPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-[#5B7B8C]">
-              Orientación &amp; Preguntas
+              Orientación y Preguntas
             </span>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
               Preguntas Frecuentes sobre Pets&apos; Eternity
@@ -604,7 +604,7 @@ export default function PetsEternityPage() {
                 </span>
               </div>
               <p className="mb-3 text-xs leading-relaxed text-slate-400">
-                Funeraria, salas de velación y crematorio para mascotas de Pet Group Bajío. Acompañamiento compasivo y procesos certificados 24/7 en León, Guanajuato.
+                Funeraria, salas de velación y crematorio para mascotas de Pet Group Bajío. Acompañamiento compasivo y procesos certificados en León, Guanajuato.
               </p>
               <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-800/60 bg-emerald-950/80 px-2.5 py-1 text-[11px] font-semibold text-emerald-400">
                 🔒 Trazabilidad por Token QR
@@ -632,8 +632,8 @@ export default function PetsEternityPage() {
               <ul className="space-y-2 font-medium">
                 <li><a href="#servicios" className="transition-colors hover:text-white">Cremación Individual</a></li>
                 <li><a href="#servicios" className="transition-colors hover:text-white">El Último Adiós en Casa</a></li>
-                <li><a href="#servicios" className="transition-colors hover:text-white">Recolección &amp; Traslado 24/7</a></li>
-                <li><a href="#servicios" className="transition-colors hover:text-white">Urnas de Cerámica &amp; Relicarios</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Recolección y Traslado</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Urnas de Cerámica y Relicarios</a></li>
               </ul>
             </div>
 
@@ -651,12 +651,12 @@ export default function PetsEternityPage() {
 
             <div>
               <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-white">
-                Horarios &amp; Contacto
+                Horarios y Contacto
               </h4>
-              <p className="mb-1 font-semibold text-slate-300">Oficinas &amp; Salas de Atención:</p>
+              <p className="mb-1 font-semibold text-slate-300">Oficinas y Salas de Atención:</p>
               <p className="mb-2 leading-relaxed text-slate-400">
-                Lunes a Domingo: 8:00 am - 9:30 pm<br />
-                <em>(Guardia de recolección y traslados 24/7)</em>
+                Lunes a Domingo: 8:30 am - 10:00 pm<br />
+                <em>(Guardia de recolección y traslados en el mismo horario)</em>
               </p>
               <p className="text-slate-400">📍 Paseo de los Insurgentes 321, Local 6, Col. Los Paraísos, León, Gto.</p>
             </div>

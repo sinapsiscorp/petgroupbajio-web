@@ -48,9 +48,9 @@ const SERVICES = [
     badge: 'Popular',
     badgeColor: 'bg-orange-100 text-orange-800 border-orange-200',
     description:
-      'Estancia en suites térmicas individuales con patio privado para el descanso nocturno y acceso libre a más de 8,000 m² de praderas verdes durante el día. Incluye dinámicas supervisadas, socialización por temperamentos y reportes diarios en video.',
+      'Estancia en suites térmicas individuales con patio privado para el descanso nocturno y acceso libre a 1 hectárea completamente cercada de praderas verdes durante el día. Incluye dinámicas supervisadas, socialización por temperamentos y reportes diarios en video.',
     includes: [
-      'Más de 8,000 m² (2 acres) de jardines campestres cercados',
+      '1 hectárea completamente cercada de jardines campestres',
       'Suite individual climatizada con camita y patio de noche',
       'Actividades recreativas y chapuzón en splash pool canina',
       'Reporte diario de fotos y videos por WhatsApp al tutor',
@@ -110,7 +110,7 @@ const SERVICES = [
 const COMPARISON_POINTS = [
   {
     feature: 'Espacio & Libertad',
-    petHotel: 'Más de 8,000 m² de áreas verdes abiertas, pasto natural y alberca canina.',
+    petHotel: '1 hectárea completamente cercada de áreas verdes abiertas, pasto natural y alberca canina.',
     traditional: 'Patios de concreto reducidos o pasillos interiores cerrados.',
   },
   {
@@ -161,7 +161,7 @@ const ADMISSION_REQUIREMENTS = [
 const FAQS = [
   {
     q: '¿Dónde se ubican las instalaciones del hotel y cómo entrego a mi mascota?',
-    a: 'Nuestra oficina central de logística, atención y recepción se encuentra en Paseo de los Insurgentes 321, Col. Los Paraísos, León, Gto. Puedes llevar a tu mascota a nuestra oficina para su traslado seguro en Pet Van hacia las instalaciones campestres (a solo 20 min del centro de León), o bien solicitar el servicio de recolección directo en tu domicilio.',
+    a: 'Nuestra oficina central de logística, atención y recepción se encuentra en Paseo de los Insurgentes 321, Col. Los Paraísos, León, Gto. Puedes llevar a tu mascota a nuestra oficina para su traslado seguro en Pet Van hacia las instalaciones campestres (a solo 15 minutos de León), o bien solicitar el servicio de recolección directo en tu domicilio.',
   },
   {
     q: '¿Qué pasa si mi mascota toma medicamentos especiales o tiene dieta médica?',
@@ -177,7 +177,7 @@ const FAQS = [
   },
   {
     q: '¿Qué garantía de seguridad y transparencia ofrece Pet Group Bajío?',
-    a: 'Toda estancia cuenta con un Token QR Único timbrado en la nube (ej. PH-AAMMDD-XXXX) que certifica las fechas de ingreso, requerimientos médicos y tarifas oficiales, respaldado por la dirección médica del Dr. Eusebio Lozano.',
+    a: 'Toda estancia cuenta con un Token QR Único timbrado en la nube (ej. PH-AAMMDD-XXXX) que certifica las fechas de ingreso, requerimientos médicos y tarifas oficiales, respaldado por dirección médica certificada.',
   },
 ];
 
@@ -216,7 +216,7 @@ export default function PetHotelPage() {
                     PET <span className="text-[#84CC16]">HOTEL</span>
                   </span>
                   <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800/70">
-                    Resort Campestre · +8,000 m² de Libertad
+                    Resort Campestre · 1 Hectárea de Libertad
                   </span>
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function PetHotelPage() {
             <div className="text-center lg:col-span-7 lg:text-left">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wide text-amber-900">
                 <span className="h-2 w-2 rounded-full bg-[#F97316] animate-ping" />
-                2 Acres de Áreas Verdes &amp; Alberca Canina · León, Gto.
+                2 Acres de Áreas Verdes y Alberca Canina · León, Gto.
               </div>
 
               <h1 className="text-3xl font-extrabold leading-[1.15] tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
@@ -261,7 +261,7 @@ export default function PetHotelPage() {
               </h1>
 
               <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-700 sm:text-lg lg:mx-0">
-                Viaja con total tranquilidad. Hospedaje campestre 100% libre de jaulas con más de 8,000 m² de praderas naturales, suites individuales climatizadas, alberca y reportes diarios en foto y video.
+                Viaja con total tranquilidad. Hospedaje campestre 100% libre de jaulas con 1 hectárea completamente cercada de praderas naturales, suites individuales climatizadas, alberca y reportes diarios en foto y video.
               </p>
 
               <div className="my-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
@@ -288,14 +288,14 @@ export default function PetHotelPage() {
                 <div className="mb-3 flex items-center gap-2">
                   <span className="font-bold text-amber-400">📌</span>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-amber-300">
-                    Información Clave de Logística &amp; Operación
+                    Información Clave de Logística y Operación
                   </span>
                 </div>
                 <ul className="space-y-2 text-xs leading-relaxed text-slate-300">
                   <li className="flex items-start gap-2">
                     <span className="font-bold text-orange-400">•</span>
                     <span>
-                      <strong>Recepción &amp; Traslado:</strong> Oficina en Paseo de los Insurgentes 321, Los Paraísos. Servicio de Pet Van disponible.
+                      <strong>Recepción y Traslado:</strong> Oficina en Paseo de los Insurgentes 321, Los Paraísos. Servicio de Pet Van disponible.
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -401,7 +401,7 @@ export default function PetHotelPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <span className="rounded-full border border-orange-500/30 bg-orange-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange-300">
-              Seguridad &amp; Salud Colectiva
+              Seguridad y Salud Colectiva
             </span>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
               Requisitos Obligatorios de Admisión
@@ -501,7 +501,7 @@ export default function PetHotelPage() {
             {[
               {
                 step: '01',
-                title: 'Contacto &amp; Fechas',
+                title: 'Contacto y Fechas',
                 desc: 'Envías tus fechas estimadas de viaje, tipo de mascota, raza y necesidades particulares por WhatsApp o formulario.',
               },
               {
@@ -517,7 +517,7 @@ export default function PetHotelPage() {
               {
                 step: '04',
                 title: '¡A Disfrutar!',
-                desc: 'Tu consentido goza de 8,000 m² de libertad mientras tú recibes reportes diarios de foto y video en tu celular.',
+                desc: 'Tu consentido goza de 1 hectárea completamente cercada de libertad mientras tú recibes reportes diarios de foto y video en tu celular.',
               },
             ].map((st) => (
               <div key={st.step} className="flex flex-col justify-between rounded-2xl border border-amber-200 bg-white p-6 shadow-sm">
@@ -607,7 +607,7 @@ export default function PetHotelPage() {
                 </span>
               </div>
               <p className="mb-3 text-xs leading-relaxed text-slate-400">
-                Resort campestre y guardería libre de jaulas de Pet Group Bajío. Más de 8,000 m² de libertad y supervisión veterinaria 24/7 en León, Guanajuato.
+                Resort campestre y guardería libre de jaulas de Pet Group Bajío. 1 hectárea completamente cercada de libertad y supervisión veterinaria 24/7 en León, Guanajuato.
               </p>
               <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-800/60 bg-emerald-950/80 px-2.5 py-1 text-[11px] font-semibold text-emerald-400">
                 🔒 Trazabilidad por Token QR
@@ -636,7 +636,7 @@ export default function PetHotelPage() {
                 <li><a href="#servicios" className="transition-colors hover:text-white">Hospedaje Campestre Canino</a></li>
                 <li><a href="#servicios" className="transition-colors hover:text-white">Guardería de Día (Day Care)</a></li>
                 <li><a href="#servicios" className="transition-colors hover:text-white">Suites Felinas Zen</a></li>
-                <li><a href="#servicios" className="transition-colors hover:text-white">Aves, Conejos &amp; Pequeñas Especies</a></li>
+                <li><a href="#servicios" className="transition-colors hover:text-white">Aves, Conejos y Pequeñas Especies</a></li>
               </ul>
             </div>
 
@@ -654,7 +654,7 @@ export default function PetHotelPage() {
 
             <div>
               <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-white">
-                Atención &amp; Recepción
+                Atención y Recepción
               </h4>
               <p className="mb-1 font-semibold text-slate-300">Oficina de Logística:</p>
               <p className="mb-2 leading-relaxed text-slate-400">
