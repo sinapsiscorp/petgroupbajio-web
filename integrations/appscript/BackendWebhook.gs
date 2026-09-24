@@ -123,8 +123,7 @@ function doGet(e) {
     if (!sheetClientes) throw new Error("Pestaña DW_Directorio_Clientes no encontrada");
 
     var rawParam = (e && e.parameter) ? (e.parameter.whatsapp || e.parameter.phone || e.parameter.telefono || e.parameter.q1_phone || "") : "";
-    var whatsapp = rawParam.toString().replace(/\D/g, "");
-    if (whatsapp.length > 10) whatsapp = whatsapp.slice(-10);
+    var whatsapp = rawParam.toString().replace(/\D/g, "").slice(-10);
 
     if (!whatsapp) {
       return ContentService.createTextOutput(JSON.stringify({
@@ -137,7 +136,7 @@ function doGet(e) {
     var data = sheetClientes.getDataRange().getValues();
 
     for (var i = 1; i < data.length; i++) {
-      var phoneInSheet = data[i][2].toString().replace(/\D/g, "");
+      var phoneInSheet = data[i][2].toString().replace(/\D/g, "").slice(-10);
       if (phoneInSheet === whatsapp) {
         var nombreCliente = data[i][1] || "Cliente";
         var idClienteMatch = data[i][0];
@@ -158,7 +157,7 @@ function doGet(e) {
         if (!nombreMascotasDirectorio && sheetSolicitudes) {
           var solData = sheetSolicitudes.getDataRange().getValues();
           for (var j = solData.length - 1; j >= 1; j--) {
-            var solPhone = solData[j][5] ? solData[j][5].toString().replace(/\D/g, "") : "";
+            var solPhone = solData[j][5] ? solData[j][5].toString().replace(/\D/g, "").slice(-10) : "";
             var solIdCliente = solData[j][3];
             if (solPhone === whatsapp || (idClienteMatch && solIdCliente === idClienteMatch)) {
               nombreMascotasUltimoServicio = (solData[j][10] || "").toString().trim();
@@ -312,7 +311,7 @@ function procesarDirectorioClientes(sheet, nombre, whatsapp, telSecundario, domi
   var totalServicios = 0;
 
   for (var i = 1; i < data.length; i++) {
-    var phoneInSheet = data[i][2].toString().replace(/\D/g, "");
+    var phoneInSheet = data[i][2].toString().replace(/\D/g, "").slice(-10);
     if (whatsapp !== "" && phoneInSheet === whatsapp) {
       rowIndex = i + 1;
       idClienteExistente = data[i][0];
