@@ -1,5 +1,7 @@
 # Doggy Wash — Backend Google Apps Script (Jotform ↔ Sheets)
 
+Parche de teléfono en doGet/procesarDirectorioClientes pendiente de aplicar en Sample.gs (repo y hoja viva difieren hasta entonces).
+
 Documento de Control: **IMP-2026-PGB-GAS-V6**
 
 Integra el formulario de Jotform (webhook POST) y el chatbot/AI Agent de Jotform (consulta GET) con el Sheet "Agenda Digital Doggy" como fuente única de verdad (SOT), a través de `BackendWebhook.gs`.
