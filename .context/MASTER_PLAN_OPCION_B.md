@@ -25,10 +25,18 @@
 
 1. **Clientes existentes que solicitan por formulario directo.** El flujo de chat (`doGet`) ya identifica a un cliente recurrente por WhatsApp, registra su solicitud de seguimiento automáticamente y notifica a recepción — pero un cliente existente que llena el formulario web público (`doPost`) no pasa por esa identificación: se procesa igual que un cliente nuevo. Falta decidir y construir cómo el formulario reconoce a un cliente ya existente (cotejo contra `DW_Directorio_Clientes` antes de timbrar) y si eso debe bloquear una segunda solicitud simultánea o solo advertir, en paralelo a la protección anti-duplicados ya implementada en el flujo de chat (ver `.context/INTEGRATIONS_JOTFORM_AI.md`).
 2. **Manejo de cotización y confirmación de pagos.** `DW_Solicitudes` ya tiene las columnas `Importe_Cotizado`, `Importe_Cobrado`, `Medio_Pago` y `Fecha_Pago` (L-O), pero **no existe ningún mecanismo que las llene** — hoy se capturan manualmente (o no se capturan) por Karina/Dulce directamente en el Sheet. Esto es vital para el reporte financiero y la trazabilidad de la operación. Falta definir: quién cotiza (¿el operador en campo, vía qué canal?), cómo se registra el cobro real, y si debe generar algún tipo de conciliación o reporte automatizado.
-3. **Doble check-in con `Token_Servicio`.** El token se genera correctamente en cada solicitud (`DW-AAMMDD-XXXX`), pero no existe ningún mecanismo operativo que lo use más allá de mostrarlo como folio de referencia. Falta diseñar:
-   - **Check-in del operador:** cómo confirma en campo que el servicio fue atendido (¿escaneo de QR, actualización de estatus vía `/verificar-token`, llamada a Karina/Dulce?).
-   - **Check-in del cliente:** cómo confirma que el servicio se realizó a su conformidad y por el monto acordado (¿el mismo token sirve para ambos check-ins, o se requiere un PIN/segundo factor?).
-   - Esto se conecta directamente con el pendiente de cotización/pago (punto 2): el segundo check-in probablemente debe validar el monto cobrado contra lo cotizado.
+3. **Doble check-in con `Token_Servicio`.** ~~El token se genera correctamente en cada solicitud (`DW-AAMMDD-XXXX`), pero no existe ningún mecanismo operativo que lo use más allá de mostrarlo como folio de referencia.~~ **Resuelto (2026-09-02)** por la capa administrativa de Google AppSheet (ver más abajo): el check-in del operador queda implícito al marcar `Estatus = En Ruta`, y el cierre queda ligado a que se registre el cobro (`Importe_Cobrado`). Enum oficial fijado en `.context/BUSINESS_RULES.md`.
+
+### Capa de gestión operativa: Google AppSheet (2026-09-02)
+
+Para que Karina y Dulce capturen y actualicen citas sin acceso directo al Sheet, se eligió **Google AppSheet** como espejo administrativo (no el panel Next.js de la Fase 2, que sigue siendo un camino futuro y separado — no confundir ambos). Un primer brief técnico fue redactado por Gemini sin visibilidad del estado real del Sheet/script (asumía un esquema de 8 columnas y un formato de token `TKN-` que no existen en producción); fue auditado y corregido antes de operar. La versión vigente:
+
+- Usa el Sheet real tal cual está (15 columnas en `DW_Solicitudes`, 8 en `DW_Directorio_Clientes`), sin reestructurarlo.
+- Replica el formato real de token `DW-AAMMDD-XXXX` en AppSheet (no `TKN-`).
+- Usa el enum de `Estatus` fijado en `.context/BUSINESS_RULES.md`.
+- No modifica `integrations/appscript/BackendWebhook.gs`.
+
+**Deuda técnica autorizable por el cliente:** la cuenta de AppSheet está en plan **Free** (Google la reserva para prototipo/prueba con hasta 10 usuarios, sin límite de tiempo — cubre a Sinapsis + Karina + Dulce). Es la app real operando sobre el Sheet real, no una maqueta. La única limitación real: las automatizaciones por cambio de dato (Bots) requieren plan **Core** ($10/usuario/mes; fuente: [about.appsheet.com/pricing](https://about.appsheet.com/pricing/), [support.google.com/appsheet/answer/10104499](https://support.google.com/appsheet/answer/10104499?hl=en)) — Starter ($5) solo cubre notificaciones, no cambios de datos. Mientras no se autorice Core, cerrar un servicio (`Estatus = Completado`) es una Acción manual de un tap ("Registrar cobro y completar") en vez de un Bot automático; la propia vista de AppSheet lo marca visualmente como función pendiente de activación. Esto no bloquea la operación diaria — es negociable con Pet Group Bajío cuando se quiera automatizar del todo.
 
 ### Ruta de verificación operativa
 

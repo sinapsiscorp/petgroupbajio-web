@@ -24,3 +24,15 @@
 - `/verificar-token` es una superficie de consulta para clientes y una zona de operación para personal autorizado; no es la fuente de datos.
 - La actualización de estatus debe validarse con autorización del operador y reflejarse en la hoja de solicitudes.
 - Los detalles del contrato Jotform/GAS y sus dependencias se mantienen en `.context/INTEGRATIONS_JOTFORM_AI.md`.
+
+## Enum oficial de `Estatus` (DW_Solicitudes, columna C)
+
+Fijado en 2026-09-02 para cerrar el pendiente 3 del Hito 5 (`.context/MASTER_PLAN_OPCION_B.md`) y reemplazar cualquier enum divergente propuesto en drafts externos (ej. briefs generados por IA que no conocían el estado real del Sheet):
+
+`Pendiente` → `Confirmado` → `En Ruta` → `Completado`, con `Cancelado` disponible en cualquier punto. No existe "Listo para Entrega" ni "En Proceso": Doggy Wash es un servicio a domicilio, no hay mostrador de recolección.
+
+- **Pendiente**: automático al crear la solicitud (Jotform/GAS o alta manual).
+- **Confirmado**: manual — único paso que requiere juicio humano de recepción (contactó al cliente y acordó horario), conforme a la política "solicitud sujeta a confirmación".
+- **En Ruta**: manual, un tap, combinado con el aviso de WhatsApp al cliente.
+- **Completado**: manual mientras el plan de AppSheet sea Free/Starter (acción de un tap al capturar el cobro); pasará a ser automático (Bot por cambio de dato en `Importe_Cobrado`) en cuanto se autorice el plan Core — ver `.context/MASTER_PLAN_OPCION_B.md`.
+- **Cancelado**: manual, disponible en cualquier punto del flujo.

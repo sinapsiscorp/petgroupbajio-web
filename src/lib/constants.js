@@ -10,6 +10,10 @@ export const APP_CONFIG = {
     process.env.NEXT_PUBLIC_JOTFORM_FORM_URL || "https://form.jotform.com/260575689640065",
 };
 
+export const ESTATUS_SERVICIO = ["Pendiente", "Confirmado", "En Ruta", "Completado", "Cancelado"];
+export const PREFIX_TOKEN = "DW-";
+export const PREFIX_CLIENTE = "CLI-";
+
 export const CORPORATE_INFO = {
   name: "Pet Group Bajío",
   address:

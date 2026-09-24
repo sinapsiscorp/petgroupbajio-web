@@ -91,6 +91,8 @@ Para que `/verificar-token` funcione contra datos reales, el despliegue de Googl
 
 Mientras ese contrato no esté disponible en el despliegue activo, la página conserva un modo demo local. La URL se configura mediante `NEXT_PUBLIC_GAS_WEBHOOK_URL`; no se deben colocar secretos en variables `NEXT_PUBLIC_*`.
 
+**Tercer escritor del Sheet (2026-09-02):** además de GAS y de la captura manual directa en Sheets, **Google AppSheet** ahora escribe también sobre `DW_Solicitudes` y `DW_Directorio_Clientes` (ver `.context/MASTER_PLAN_OPCION_B.md`, sección "Capa de gestión operativa"). Debe mantenerse el mismo formato de token (`DW-AAMMDD-XXXX`) y el mismo enum de `Estatus` (`.context/BUSINESS_RULES.md`) entre los tres escritores — cualquier cambio a alguno de los dos debe replicarse en los otros dos para no romper `/verificar-token`. AppSheet escribe vía el motor de sincronización de Sheets API, fuera del alcance de `LockService.getScriptLock()` de GAS: ese lock solo serializa ejecuciones dentro del propio script y no protege contra una edición simultánea desde AppSheet.
+
 ## 5. Pendientes activos (2026-08-30)
 
 Documentados también en `.context/MASTER_PLAN_OPCION_B.md` (Hito 5):
