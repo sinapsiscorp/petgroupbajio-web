@@ -31,12 +31,12 @@
 
 Para que Karina y Dulce capturen y actualicen citas sin acceso directo al Sheet, se eligió **Google AppSheet** como espejo administrativo (no el panel Next.js de la Fase 2, que sigue siendo un camino futuro y separado — no confundir ambos). Un primer brief técnico fue redactado por Gemini sin visibilidad del estado real del Sheet/script (asumía un esquema de 8 columnas y un formato de token `TKN-` que no existen en producción); fue auditado y corregido antes de operar. La versión vigente:
 
-- Usa el Sheet real tal cual está (15 columnas en `DW_Solicitudes`, 8 en `DW_Directorio_Clientes`), sin reestructurarlo.
-- Replica el formato real de token `DW-AAMMDD-XXXX` en AppSheet (no `TKN-`).
+- Usa el Sheet real (17 columnas en `DW_Solicitudes` — se agregaron `Fecha_Servicio` (P) y `Franja_Horaria` (Q) para capturar la cita agendada — y 9 en `DW_Directorio_Clientes`, con `Nombre_Mascotas` (I) agregada), sin tocar las columnas que ya escribe el GAS.
+- Replica el formato real de token `DW-AAMMDD-XXXX` en AppSheet (no `TKN-`), con `SUBSTITUTE(TEXT(...), ",", "")` para evitar la coma de miles.
 - Usa el enum de `Estatus` fijado en `.context/BUSINESS_RULES.md`.
 - No modifica `integrations/appscript/BackendWebhook.gs`.
 
-**Deuda técnica autorizable por el cliente:** la cuenta de AppSheet está en plan **Free** (Google la reserva para prototipo/prueba con hasta 10 usuarios, sin límite de tiempo — cubre a Sinapsis + Karina + Dulce). Es la app real operando sobre el Sheet real, no una maqueta. La única limitación real: las automatizaciones por cambio de dato (Bots) requieren plan **Core** ($10/usuario/mes; fuente: [about.appsheet.com/pricing](https://about.appsheet.com/pricing/), [support.google.com/appsheet/answer/10104499](https://support.google.com/appsheet/answer/10104499?hl=en)) — Starter ($5) solo cubre notificaciones, no cambios de datos. Mientras no se autorice Core, cerrar un servicio (`Estatus = Completado`) es una Acción manual de un tap ("Registrar cobro y completar") en vez de un Bot automático; la propia vista de AppSheet lo marca visualmente como función pendiente de activación. Esto no bloquea la operación diaria — es negociable con Pet Group Bajío cuando se quiera automatizar del todo.
+**Estado de la cuenta y plan de AppSheet:** la app opera hoy en estado **Prototype** (sin plan de pago asociado; único ERROR del Deployment Check es *Account status*), sobre la cuenta dueña del proyecto (`<CUENTA_DUENA>`). Es la app real operando sobre el Sheet real, no una maqueta — cubre a Sinapsis + Karina + Dulce (hasta 10 usuarios). "Analyze app features" (corrido con las acciones ya creadas) confirmó que la app **cabe en el plan Starter** ($5/usuario/mes); Core y Enterprise también la cubren, Publisher Pro no (por el sign-in). **Roles:** Admin (Larissa y Ulises) vs. usuario (Karina y Dulce) se distinguen con `USERROLE()` en cada Editable_If, sin guardar correos en las fórmulas — ver `.context/APPSHEET_SETUP_PLAYBOOK.md` sección 1.8. **Deuda técnica autorizable por el cliente:** las automatizaciones por cambio de dato (Bots) siguen requiriendo plan **Core** ($10/usuario/mes; fuente: [about.appsheet.com/pricing](https://about.appsheet.com/pricing/), [support.google.com/appsheet/answer/10104499](https://support.google.com/appsheet/answer/10104499?hl=en)) — Starter solo cubre notificaciones, no cambios de datos. Mientras no se autorice Core, cerrar un servicio (`Estatus = Completado`) es una Acción manual de un tap ("Registrar cobro y completar") en vez de un Bot automático. Esto no bloquea la operación diaria — es negociable con Pet Group Bajío cuando se quiera automatizar del todo o pasar de Prototype a un plan pagado.
 
 ### Ruta de verificación operativa
 
@@ -51,17 +51,19 @@ Esto evita confundir al visitante con funciones de administración y mantiene la
 
 ### **Pestaña 1: DW\_Solicitudes (Bandeja de Entrada Operativa)**
 
-| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H | Col I | Col J | Col K | Col L | Col M | Col N | Col O |
-| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
-| Token\_Servicio | Fecha\_Solicitud | Estatus | ID\_Cliente | Nombre\_Contacto | WhatsApp\_Principal | Domicilio\_Colonia | Cant\_Mascotas | Raza\_Tamanio | Operador\_Asignado | Nombre\_Mascotas | Importe\_Cotizado | Importe\_Cobrado | Medio\_Pago | Fecha\_Pago |
+| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H | Col I | Col J | Col K | Col L | Col M | Col N | Col O | Col P | Col Q |
+| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
+| Token\_Servicio | Fecha\_Solicitud | Estatus | ID\_Cliente | Nombre\_Contacto | WhatsApp\_Principal | Domicilio\_Colonia | Cant\_Mascotas | Raza\_Tamanio | Operador\_Asignado | Nombre\_Mascotas | Importe\_Cotizado | Importe\_Cobrado | Medio\_Pago | Fecha\_Pago | Fecha\_Servicio | Franja\_Horaria |
 
-Las columnas K-O son de captura manual por Karina/Dulce (K se llena automáticamente cuando el seguimiento viene del chat de un cliente recurrente ya identificado; L-O aún no tienen ningún mecanismo automatizado — ver pendiente 2 del Hito 5 arriba).
+Las columnas K-O son de captura manual por Karina/Dulce (K se llena automáticamente cuando el seguimiento viene del chat de un cliente recurrente ya identificado; L-O aún no tienen ningún mecanismo automatizado — ver pendiente 2 del Hito 5 arriba). Las columnas P-Q las agregó y las llena AppSheet (fecha y franja horaria de la cita agendada); el GAS no las escribe.
 
 ### **Pestaña 2: DW\_Directorio\_Clientes (CRM y Récord Histórico)**
 
-| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H |
-| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
-| ID\_Cliente | Nombre\_Cliente | WhatsApp\_Principal | Telefono\_Secundario | Domicilio\_Habitual | Mascotas\_Registradas | Total\_Servicios | Ultima\_Visita |
+| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H | Col I |
+| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
+| ID\_Cliente | Nombre\_Cliente | WhatsApp\_Principal | Telefono\_Secundario | Domicilio\_Habitual | Mascotas\_Registradas | Total\_Servicios | Ultima\_Visita | Nombre\_Mascotas |
+
+La columna I (`Nombre_Mascotas`) la agregó AppSheet; el GAS no la escribe hoy.
 
 ### **Pestaña 3: Debug\_Logs (Diagnóstico de Webhooks)**
 

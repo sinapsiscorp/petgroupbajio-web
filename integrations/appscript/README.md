@@ -67,8 +67,8 @@ Nota los prefijos `qN_` variables antepuestos al nombre semántico del campo (`q
 
 ## Estructura de Sheets
 
-- **DW_Solicitudes**: `Token_Servicio, Fecha_Solicitud, Estatus, ID_Cliente, Nombre_Contacto, WhatsApp_Principal, Domicilio_Colonia, Cant_Mascotas, Raza_Tamanio, Operador_Asignado`
-- **DW_Directorio_Clientes**: `ID_Cliente, Nombre_Cliente, WhatsApp_Principal, Telefono_Secundario, Domicilio_Habitual, Mascotas_Registradas, Total_Servicios, Ultima_Visita`
+- **DW_Solicitudes** (17 columnas, A-Q): `Token_Servicio, Fecha_Solicitud, Estatus, ID_Cliente, Nombre_Contacto, WhatsApp_Principal, Domicilio_Colonia, Cant_Mascotas, Raza_Tamanio, Operador_Asignado, Nombre_Mascotas, Importe_Cotizado, Importe_Cobrado, Medio_Pago, Fecha_Pago, Fecha_Servicio, Franja_Horaria`. Las dos últimas (`Fecha_Servicio` = P, `Franja_Horaria` = Q) las agregó la capa de AppSheet (ver `.context/APPSHEET_SETUP_PLAYBOOK.md`); `parseJotformPayload` no las escribe.
+- **DW_Directorio_Clientes** (9 columnas, A-I): `ID_Cliente, Nombre_Cliente, WhatsApp_Principal, Telefono_Secundario, Domicilio_Habitual, Mascotas_Registradas, Total_Servicios, Ultima_Visita, Nombre_Mascotas`.
 - **Debug_Logs**: `Timestamp, rawPayloadString` — se crea automáticamente en cada `doPost`, clave para diagnosticar qué llaves manda Jotform realmente.
 
 ## Configuración en Jotform AI Agent
@@ -98,7 +98,7 @@ Nota los prefijos `qN_` variables antepuestos al nombre semántico del campo (`q
 
 El brief incluía dos ideas de producto razonables que no se implementaron por venir junto con el bug de matching, pero que valen la pena retomar **por separado**, ya verificadas contra el payload real y con el fix de `indexOf` aplicado:
 
-- **Esquema de 15 columnas en `DW_Solicitudes`** (agregar `Nombre_Mascotas`, `Importe_Cotizado`, `Importe_Cobrado`, `Medio_Pago`, `Fecha_Pago` para captura manual de Karina/Dulce).
+- ~~**Esquema de 15 columnas en `DW_Solicitudes`** (agregar `Nombre_Mascotas`, `Importe_Cotizado`, `Importe_Cobrado`, `Medio_Pago`, `Fecha_Pago` para captura manual de Karina/Dulce).~~ **Implementado** (2026-09-24): el Sheet ya tiene esas 5 columnas, más `Fecha_Servicio` y `Franja_Horaria` agregadas por AppSheet (17 en total — ver "Estructura de Sheets" arriba). No lo hizo el GAS: `parseJotformPayload` sigue sin escribir en L-Q.
 - **GET enriquecido cruzando `DW_Solicitudes`** para devolver el nombre real de las mascotas de la última solicitud, no solo la descripción general del Directorio.
 
 Si se retoman, aplicar el mismo principio: usar `indexOf` por palabra clave para cualquier extracción de campo nuevo, y probar contra un payload real capturado en `Debug_Logs` antes de dar por buena la implementación.
