@@ -61,6 +61,52 @@ export default function VerificarTokenPage() {
     }
   };
 
+  const handleCheckIn = async () => {
+    if (!pinInput.trim()) {
+      setErrorMsg("Ingresa tu PIN de operador para marcar la llegada.");
+      return;
+    }
+
+    var tokenActivo = serviceData?.token || tokenInput.trim().toUpperCase();
+    if (!tokenActivo) {
+      setErrorMsg("Primero consulta un folio válido para poder marcar tu llegada.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      if (!gasWebhookUrl || gasWebhookUrl.includes("TU_DEPLOYMENT_ID")) {
+        setTimeout(() => {
+          setSuccessMsg("¡Llegada registrada! (modo demo, no se guardó en La Biblia)");
+          setPinInput("");
+          setLoading(false);
+        }, 600);
+        return;
+      }
+
+      const res = await fetch(gasWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "check_in", token: tokenActivo, pin: pinInput }),
+      });
+
+      const resData = await res.json();
+      if (resData.result === "success") {
+        setSuccessMsg("¡Llegada registrada correctamente!");
+        setPinInput("");
+      } else {
+        setErrorMsg(resData.error || "No se pudo registrar la llegada.");
+      }
+    } catch (err) {
+      setErrorMsg("Error al sincronizar con el servidor central.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStatusUpdate = async (nuevoEstatus) => {
     if (pinInput !== "2026") {
       setErrorMsg("PIN de Operador incorrecto. Ingresa el PIN asignado a tu unidad.");
@@ -203,7 +249,7 @@ export default function VerificarTokenPage() {
                   </div>
                   <span
                     className={`rounded-full border px-2 py-1 text-[10px] font-bold ${
-                      serviceData.estatus === "Finalizado"
+                      serviceData.estatus === "Completado"
                         ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
                         : serviceData.estatus === "En Ruta"
                           ? "border-sky-500/30 bg-sky-500/10 text-sky-300"
@@ -221,7 +267,7 @@ export default function VerificarTokenPage() {
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
                     <span className="block text-slate-400">Mascotas & Raza</span>
-                    <span className="mt-1 block font-semibold text-white">{serviceData.raza || "Por confirmar"}</span>
+                    <span className="mt-1 block font-semibold text-white">{serviceData.mascotas || serviceData.raza || "Por confirmar"}</span>
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
                     <span className="block text-slate-400">Operador Asignado</span>
@@ -254,12 +300,24 @@ export default function VerificarTokenPage() {
                     <button
                       type="button"
                       disabled={loading}
-                      onClick={() => handleStatusUpdate("Finalizado")}
+                      onClick={() => handleStatusUpdate("Completado")}
                       className="rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-500"
                     >
-                      ✅ Finalizar
+                      ✅ Completado
                     </button>
                   </div>
+
+                  {/* Botón de check-in del operador (action:"check_in"), independiente
+                      de los botones de arriba (action:"update_status", que siguen
+                      bloqueados en el backend hasta que se decida si se implementan). */}
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handleCheckIn}
+                    className="mt-2 w-full rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-2.5 text-xs font-bold text-sky-300 transition hover:bg-sky-500/20"
+                  >
+                    📍 Marcar llegada
+                  </button>
                 </div>
               </div>
             )}
