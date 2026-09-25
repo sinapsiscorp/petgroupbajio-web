@@ -52,6 +52,22 @@ function doPost(e) {
       return registrarSeguimientoChat(sheetSolicitudes, sheetClientes, sheetDebug, data);
     }
 
+    // 1.2.2 Guard contra acciones de /verificar-token todavía no implementadas.
+    // "action" (inglés) es distinto de "accion" (español, seguimiento_chat, arriba):
+    // así se evita que un payload de estas acciones caiga al parser genérico, que
+    // trataría el token (formato DW-AAMMDD-XXXX) como si fuera un WhatsApp y crearía
+    // un cliente y una solicitud fantasma. Ver .context/PLAN_VERIFICAR_TOKEN.md.
+    // check_in se reemplaza por el handler real en la Fase 2 (no se apila).
+    if (data && data.action === "check_in") {
+      return manejarCheckIn(sheetSolicitudes, sheetDebug, data);
+    }
+    if (data && data.action === "update_status") {
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "error",
+        error: "Acción no disponible todavía. Esta función se activa en la Fase 2."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 1.3 Extracción Universal con Inspección Profunda de Llaves
     var parsed = parseJotformPayload(data);
 
@@ -121,6 +137,16 @@ function doGet(e) {
     var sheetClientes = ss.getSheetByName("DW_Directorio_Clientes");
     var sheetSolicitudes = ss.getSheetByName("DW_Solicitudes");
     if (!sheetClientes) throw new Error("Pestaña DW_Directorio_Clientes no encontrada");
+
+    // 2.0 /verificar-token, Fase 1: GET ?token=DW-AAMMDD-XXXX (vista de cliente,
+    // sin PIN). Rama separada de la identificación por WhatsApp de abajo: no
+    // comparte lógica ni columnas de salida. Devuelve solo el subconjunto
+    // cliente-seguro definido en .context/PLAN_VERIFICAR_TOKEN.md inciso (b) —
+    // nunca WhatsApp, domicilio completo ni importes.
+    var tokenParam = (e && e.parameter) ? (e.parameter.token || "") : "";
+    if (tokenParam) {
+      return consultarPorToken(sheetSolicitudes, tokenParam);
+    }
 
     var rawParam = (e && e.parameter) ? (e.parameter.whatsapp || e.parameter.phone || e.parameter.telefono || e.parameter.q1_phone || "") : "";
     var whatsapp = rawParam.toString().replace(/\D/g, "").slice(-10);
@@ -550,5 +576,164 @@ function registrarSolicitudSeguimiento(ss, idCliente, nombre, whatsapp, domicili
   } catch (error) {
     sheetDebug.appendRow([Utilities.formatDate(new Date(), "America/Mexico_City", "yyyy-MM-dd HH:mm:ss"), "ERROR REGISTRO SEGUIMIENTO AUTOMÁTICO: " + error.toString()]);
     return "";
+  }
+}
+
+// ==========================================
+// 7. /verificar-token — Fase 1: GET ?token= (solo lectura, sin PIN)
+// ==========================================
+// Busca el folio en DW_Solicitudes y devuelve únicamente el subconjunto
+// cliente-seguro acordado en .context/PLAN_VERIFICAR_TOKEN.md inciso (b):
+// nunca WhatsApp, domicilio completo ni Importe_Cotizado/Importe_Cobrado.
+function consultarPorToken(sheetSolicitudes, tokenParam) {
+  try {
+    if (!sheetSolicitudes) throw new Error("Pestaña DW_Solicitudes no encontrada");
+
+    var token = tokenParam.toString().trim().toUpperCase();
+    var data = sheetSolicitudes.getDataRange().getValues();
+
+    for (var i = 1; i < data.length; i++) {
+      var tokenFila = (data[i][0] || "").toString().trim().toUpperCase();
+      if (tokenFila !== token) continue;
+
+      var fechaServicioRaw = data[i][15];
+      var fechaServicio = fechaServicioRaw instanceof Date
+        ? Utilities.formatDate(fechaServicioRaw, "America/Mexico_City", "dd/MM/yyyy")
+        : (fechaServicioRaw || "").toString();
+
+      var nombreMascotas = (data[i][10] || "").toString().trim();
+      var razaTamanio = (data[i][8] || "").toString().trim();
+      var mascotas = nombreMascotas || razaTamanio || "Por confirmar";
+
+      var operadorFila = (data[i][9] || "Sin Asignar").toString().trim();
+      var operadorNombrePila = operadorFila === "Sin Asignar" ? operadorFila : operadorFila.split(" ")[0];
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "encontrado",
+        token: data[i][0],
+        estatus: data[i][2] || "Pendiente",
+        fechaServicio: fechaServicio,
+        franjaHoraria: (data[i][16] || "").toString(),
+        colonia: extraerColonia(data[i][6]),
+        mascotas: mascotas,
+        operador: operadorNombrePila
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "no_encontrado",
+      token: token,
+      mensaje: "No se encontró ningún servicio con ese folio."
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Best-effort: DW_Solicitudes no tiene columna propia de Colonia, solo
+// Domicilio_Colonia (G) con la dirección completa capturada en formulario
+// libre (ver parseJotformPayload). Se asume el formato típico
+// "calle y número, colonia, ciudad, estado, CP" y se toma el segundo
+// segmento; si el domicilio no trae comas (texto libre de un solo bloque),
+// no hay forma confiable de aislar la colonia sin exponer la dirección
+// completa, así que se devuelve un genérico en vez de arriesgar filtrar el
+// domicilio. Limitación conocida — ver .context/PLAN_VERIFICAR_TOKEN.md.
+function extraerColonia(domicilio) {
+  var texto = (domicilio || "").toString().trim();
+  if (!texto || texto === "No especificado") return "Por confirmar";
+
+  var partes = texto.split(",").map(function(p) { return p.trim(); }).filter(Boolean);
+  if (partes.length >= 2) return partes[1];
+
+  return "Zona de servicio (colonia no disponible aún)";
+}
+
+// ==========================================
+// 8. /verificar-token — Fase 2: POST action:"check_in" (llegada del operador)
+// ==========================================
+// Registra la hora real de llegada del operador en la columna nueva R
+// (Fecha_Llegada_Operador, índice 18) de DW_Solicitudes, sin tocar Estatus
+// ni los arreglos que ya escriben doPost/registrarSeguimientoChat/
+// registrarSolicitudSeguimiento. Ver .context/PLAN_VERIFICAR_TOKEN.md
+// inciso (c), opción 1 (elegida como definitiva el 2026-09-25).
+var CHECKIN_PIN_PROPERTY = "PIN_OPERADOR";
+var CHECKIN_MAX_INTENTOS = 5;
+var CHECKIN_VENTANA_BLOQUEO_MIN = 15;
+var CHECKIN_COL_FECHA_LLEGADA = 18; // Columna R
+
+function manejarCheckIn(sheetSolicitudes, sheetDebug, data) {
+  try {
+    var token = (data.token || "").toString().trim().toUpperCase();
+    var pinRecibido = (data.pin || "").toString().trim();
+
+    if (!token) {
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "error",
+        error: "Falta el folio (token)."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var cache = CacheService.getScriptCache();
+    var cacheKey = "checkin_intentos_" + token;
+    var intentosPrevios = Number(cache.get(cacheKey)) || 0;
+
+    if (intentosPrevios >= CHECKIN_MAX_INTENTOS) {
+      sheetDebug.appendRow([Utilities.formatDate(new Date(), "America/Mexico_City", "yyyy-MM-dd HH:mm:ss"), "CHECK-IN BLOQUEADO por intentos: " + token]);
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "error",
+        error: "Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var pinGuardado = PropertiesService.getScriptProperties().getProperty(CHECKIN_PIN_PROPERTY);
+    if (!pinGuardado) {
+      sheetDebug.appendRow([Utilities.formatDate(new Date(), "America/Mexico_City", "yyyy-MM-dd HH:mm:ss"), "CHECK-IN: falta configurar Script Property " + CHECKIN_PIN_PROPERTY]);
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "error",
+        error: "Check-in no disponible todavía."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (pinRecibido !== pinGuardado) {
+      cache.put(cacheKey, String(intentosPrevios + 1), CHECKIN_VENTANA_BLOQUEO_MIN * 60);
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "error",
+        error: "PIN incorrecto."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var solData = sheetSolicitudes.getDataRange().getValues();
+    for (var i = 1; i < solData.length; i++) {
+      var tokenFila = (solData[i][0] || "").toString().trim().toUpperCase();
+      if (tokenFila !== token) continue;
+
+      cache.remove(cacheKey);
+      var ahora = new Date();
+      sheetSolicitudes.getRange(i + 1, CHECKIN_COL_FECHA_LLEGADA).setValue(ahora);
+
+      sheetDebug.appendRow([Utilities.formatDate(ahora, "America/Mexico_City", "yyyy-MM-dd HH:mm:ss"), "CHECK-IN registrado: " + token]);
+
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "success",
+        token: token,
+        fechaLlegada: Utilities.formatDate(ahora, "America/Mexico_City", "yyyy-MM-dd HH:mm:ss")
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      result: "error",
+      error: "No se encontró ningún servicio con ese folio."
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    sheetDebug.appendRow([Utilities.formatDate(new Date(), "America/Mexico_City", "yyyy-MM-dd HH:mm:ss"), "ERROR CHECK-IN: " + error.toString()]);
+    return ContentService.createTextOutput(JSON.stringify({
+      result: "error",
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 }
