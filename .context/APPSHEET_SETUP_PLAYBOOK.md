@@ -32,6 +32,20 @@ con la cuenta `<CUENTA_DUENA>`. También puedes instalar la app **AppSheet** (iO
 
 ## 1. Estado por área
 
+### 1.0 ⚠️ Pendientes de HOY (2026-09-25) para Ulises en AppSheet
+
+**Léelo primero.** Esta sesión (Claude Code) hizo varios cambios en el repo y en producción (GAS + sitio) que ya funcionan de este lado, pero que **no se van a ver ni aplicar en AppSheet hasta que tú hagas algo ahí** — AppSheet no se toca desde el repo, así que nada de esto pasa solo. Es la lista completa, consolidada, para no perder nada:
+
+| # | Qué | Por qué importa | Dónde está el detalle | Estado |
+|---|---|---|---|---|
+| 1 | **Valid_If contra duplicados por WhatsApp** en el alta manual de clientes | Sin esto, se puede volver a dar de alta el mismo cliente dos veces a mano (ya pasó una vez, ver D-6) | Sección 1.7, defecto **D-6** | ⬜ |
+| 2 | **Editable_If de `Importe_Cotizado`** — cambiar de solo-Admin a abierto (User y Admin) | Con la regla vieja, Karina y Dulce (User) no pueden cotizar — bloquea su trabajo diario | Sección 1.8, fila `Importe_Cotizado` | ⬜ |
+| 3 | **Feedback interno** — desactivar el feedback nativo de AppSheet y montar el propio (`Reportes_Feedback` + acción de correo a `bugs@impletech-ai.com`) | El feedback nativo hoy se va a los desarrolladores de AppSheet, no a Ulises — se pierde | Sección 1.13 | ⬜ (nada construido aún) |
+| 4 | **Mostrar `Fecha_Llegada_Operador`** (columna R) en alguna vista de AppSheet | El check-in del operador ya funciona y escribe el dato (probado con folio `DW-260906-9934`), pero hoy nadie lo ve sin abrir el Sheet crudo | Sección 1.14 | ⬜ (columna nueva, aún sin vista) |
+| 5 | **Regenerate Structure** en `DW_Solicitudes` y correr Deployment Check de nuevo | AppSheet necesita detectar la columna R nueva; confirma que no rompió nada | Sección 1.14, ítem 1 | ⬜ |
+
+**Lo que NO necesita nada de ti en AppSheet** (para que sepas que no se te está pasando algo): el guard de `update_status`/`check_in` en `doPost`, el `GET ?token=` de `/verificar-token`, y el `check_in` con PIN — todo eso vive en el GAS y en el sitio, no en AppSheet, y ya está probado en producción.
+
 ### 1.1 Datos (Data > Columns)
 
 | Item | Config | Verif | Nota |
@@ -130,16 +144,17 @@ Guía y código completo: **"Carga masiva de clientes — Doggy Wash (guía + c�
 
 ### 1.10 Conexión con el sitio web (`/verificar-token`) y check-in del operador
 
-**Estado: aún NO se conecta.** La página `/verificar-token` existe en el repo pero funciona en **modo demo local** (datos inventados). Para conectarla a datos reales falta:
+**Estado (2026-09-25): CONECTADO y probado en producción.** Ya no es modo demo — `NEXT_PUBLIC_GAS_WEBHOOK_URL` está configurada en Vercel y el sitio apunta al despliegue real del GAS.
 
-| Pendiente | Dónde | Estado |
+| Pendiente (histórico) | Dónde | Estado |
 |---|---|---|
-| `GET /exec?token=...` (consultar una cita por folio) en el despliegue activo del GAS | GAS (Claude Code) | ⬜ |
-| `POST /exec` con `action:"update_status"` que valide la autorización del operador | GAS (Claude Code) | ⬜ |
-| **Seguridad:** hoy el PIN (`<PIN_ACTUAL>`, el PIN escrito en page.jsx) está escrito **dentro del código de la página**, visible para cualquiera. Debe validarse en el servidor (Script Properties) y no en el navegador | Sitio web + GAS | ⬜ **Prioritario antes de activar** |
-| Definir qué datos ve el cliente y cuáles solo el operador (hoy la consulta devuelve colonia, mascotas y operador) | Decisión + GAS | ⬜ |
+| `GET /exec?token=...` (consultar una cita por folio) | GAS | ✅ Implementado y probado en producción (folio `DW-260906-9934`) |
+| `POST /exec` con `action:"check_in"` (llegada del operador, con PIN) | GAS + sitio | ✅ Implementado y probado en producción — ver 1.14 para lo que falta en AppSheet |
+| `POST /exec` con `action:"update_status"` | GAS | Sigue bloqueado a propósito (guard responde error controlado) — no se implementó, ver Fase 3 de `.context/PLAN_VERIFICAR_TOKEN.md` |
+| **Seguridad del PIN:** movido a Script Property `PIN_OPERADOR`, validado solo en servidor, con límite de 5 intentos/15 min | GAS | ✅ Resuelto — el PIN ya no vive en el código del sitio |
+| Qué datos ve el cliente (colonia, mascotas, operador; nunca WhatsApp/domicilio completo/importes) | GAS | ✅ Implementado (`consultarPorToken`) — ver limitación conocida de `colonia` en `.context/PLAN_VERIFICAR_TOKEN.md` |
 
-**Sobre el "doble check-in":** el plan maestro lo da por resuelto con AppSheet (*En Ruta* = check-in del operador; el cobro cierra el servicio). Pero hoy **`En Ruta` lo marca recepción al enviar el WhatsApp**, no el operador al llegar al domicilio. Por eso **la llegada real del operador no queda registrada** en ningún lado. Decisión pendiente: cómo capturar esa llegada (ver opciones en la conversación) sin agregar estatus nuevos que rompan el contrato entre GAS, AppSheet y el sitio.
+**Sobre el "doble check-in":** resuelto a nivel de datos — el check-in real del operador ya se registra en `Fecha_Llegada_Operador` (columna R), separado de `Estatus` (que sigue siendo *En Ruta* = lo marca recepción al mandar el WhatsApp). **Pendiente:** que ese dato se vea en algún lado de AppSheet — ver sección 1.14.
 
 
 ### 1.11 Drive, acceso y mapa de piezas
@@ -197,6 +212,26 @@ Guía y código completo: **"Carga masiva de clientes — Doggy Wash (guía + c�
 | Pestaña `Reportes_Feedback` creada | ⬜ | ⬜ |
 | Tabla + vista *form* en AppSheet | ⬜ | ⬜ |
 | Acción "Send email" a `bugs@impletech-ai.com` en *Data Change: Adds* | ⬜ | ⬜ |
+
+### 1.14 Mostrar la llegada del operador en AppSheet (diseño, por ejecutar por Ulises)
+
+**Estado (2026-09-25):** `Fecha_Llegada_Operador` (columna R) ya se prueba en producción — `/verificar-token` Fase 2 (check-in con PIN) escribe el timestamp correctamente (verificado con el folio `DW-260906-9934`). Pero **hoy ese dato no aparece en ningún lado de la app AppSheet** — se diseñó a propósito como puramente observacional (ver `.context/PLAN_VERIFICAR_TOKEN.md` inciso c), sin vista ni acción asociada, para no tocar el flujo ya verificado. El resultado: Karina/Dulce no tienen forma de ver desde AppSheet si el operador ya llegó, salvo abriendo el Sheet crudo.
+
+**Nada de esto se toca desde el repo** — es 100% configuración de AppSheet.
+
+1. **Confirmar que AppSheet detectó la columna.** *Data → Columns* (tabla `DW_Solicitudes`) → si `Fecha_Llegada_Operador` no aparece, correr "Regenerate Structure".
+2. **Tipo de columna:** `DateTime`. **Editable_If:** `FALSE` (o dejarla fuera de cualquier formulario) — es de solo lectura desde AppSheet, la única fuente que la escribe es el `action:"check_in"` del sitio.
+3. **Dónde mostrarla (propuesta, misma lógica que `Fecha_Servicio`/`Franja_Horaria` ya visibles hoy):**
+   - Agregarla a la vista de **detalle de la cita** (la que se abre al tocar una cita en el Tablero), debajo de `Operador_Asignado`, con una etiqueta clara: "Llegada del operador".
+   - Opcional, más visible: una columna virtual tipo `IF(ISNOTBLANK([Fecha_Llegada_Operador]), "✅ Llegó " & TEXT([Fecha_Llegada_Operador], "HH:MM"), "")` para mostrarla como una insignia corta en el Tablero (deck), junto al estatus — sin agregar un estatus nuevo, solo lectura visual.
+4. **No condicionar ninguna acción existente a esta columna** (Confirmar cita, WhatsApp de Ruta, Registrar cobro) — sigue siendo un dato de auditoría aparte del flujo de `Estatus`, por diseño.
+
+| Item | Config | Verif |
+|---|---|---|
+| Columna `Fecha_Llegada_Operador` detectada en AppSheet (Regenerate Structure si hace falta) | ⬜ | ⬜ |
+| Editable_If = FALSE | ⬜ | ⬜ |
+| Visible en detalle de la cita | ⬜ | ⬜ |
+| (Opcional) insignia en el Tablero | ⬜ | ⬜ |
 
 ### 1.5 P1 (mismo día si alcanza)
 
