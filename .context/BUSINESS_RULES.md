@@ -36,3 +36,9 @@ Fijado en 2026-09-02 para cerrar el pendiente 3 del Hito 5 (`.context/MASTER_PLA
 - **En Ruta**: manual, un tap, combinado con el aviso de WhatsApp al cliente.
 - **Completado**: manual mientras el plan de AppSheet sea Free/Starter (acción de un tap al capturar el cobro); pasará a ser automático (Bot por cambio de dato en `Importe_Cobrado`) en cuanto se autorice el plan Core — ver `.context/MASTER_PLAN_OPCION_B.md`.
 - **Cancelado**: manual, disponible en cualquier punto del flujo.
+
+## Corrección de política: `Importe_Cotizado` (2026-09-25)
+
+`Importe_Cotizado` **no** es exclusivo de Admin. Cualquier usuario con rol User (Karina, Dulce, Larissa) puede capturarlo y editarlo en cualquier momento — es parte de su trabajo diario de recepción. La restricción real sigue siendo sobre `Importe_Cobrado`/`Medio_Pago` **después** de que la cita pasa a `Completado`: ahí sí solo Admin puede corregir (fix D-4, ya verificado en `.context/APPSHEET_SETUP_PLAYBOOK.md`).
+
+Reemplaza la política anterior (sesión previa), que pedía `Importe_Cotizado` solo-Admin — esa regla, ya probada y funcionando en AppSheet, dejaba a *nadie* del equipo operativo con permiso de cotizar tras confirmarse que Larissa es **User** (no Admin) en la junta del 2026-09-25. Karina y Dulce son quienes cotizan y cobran en el día a día.

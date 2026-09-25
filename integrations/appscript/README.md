@@ -69,7 +69,7 @@ Nota los prefijos `qN_` variables antepuestos al nombre semántico del campo (`q
 
 ## Estructura de Sheets
 
-- **DW_Solicitudes** (17 columnas, A-Q): `Token_Servicio, Fecha_Solicitud, Estatus, ID_Cliente, Nombre_Contacto, WhatsApp_Principal, Domicilio_Colonia, Cant_Mascotas, Raza_Tamanio, Operador_Asignado, Nombre_Mascotas, Importe_Cotizado, Importe_Cobrado, Medio_Pago, Fecha_Pago, Fecha_Servicio, Franja_Horaria`. Las dos últimas (`Fecha_Servicio` = P, `Franja_Horaria` = Q) las agregó la capa de AppSheet (ver `.context/APPSHEET_SETUP_PLAYBOOK.md`); `parseJotformPayload` no las escribe.
+- **DW_Solicitudes** (18 columnas, A-R): `Token_Servicio, Fecha_Solicitud, Estatus, ID_Cliente, Nombre_Contacto, WhatsApp_Principal, Domicilio_Colonia, Cant_Mascotas, Raza_Tamanio, Operador_Asignado, Nombre_Mascotas, Importe_Cotizado, Importe_Cobrado, Medio_Pago, Fecha_Pago, Fecha_Servicio, Franja_Horaria, Fecha_Llegada_Operador`. `Fecha_Servicio` (P) y `Franja_Horaria` (Q) las agregó la capa de AppSheet (ver `.context/APPSHEET_SETUP_PLAYBOOK.md`); `parseJotformPayload` no las escribe. `Fecha_Llegada_Operador` (R, 2026-09-25) es nueva: timestamp puntual que escribe únicamente `manejarCheckIn` (`action:"check_in"`, ver más abajo) — diff listo, sin desplegar.
 - **DW_Directorio_Clientes** (9 columnas, A-I): `ID_Cliente, Nombre_Cliente, WhatsApp_Principal, Telefono_Secundario, Domicilio_Habitual, Mascotas_Registradas, Total_Servicios, Ultima_Visita, Nombre_Mascotas`.
 - **Debug_Logs**: `Timestamp, rawPayloadString` — se crea automáticamente en cada `doPost`, clave para diagnosticar qué llaves manda Jotform realmente.
 
@@ -95,6 +95,14 @@ Nota los prefijos `qN_` variables antepuestos al nombre semántico del campo (`q
 - Parámetro mínimo: key `whatsapp` (mismo prompt que en GET)
 - Opcional: keys `cant_mascotas` / `direccion` con prompt "solo si el cliente menciona un cambio para este servicio, si no, deja vacío" — el backend hereda del Directorio si no llegan.
 - **Pendiente de completar la confirmación al cliente tras la ejecución** (ver sección de pendientes arriba).
+
+## `/verificar-token` (2026-09-25, diff listo, sin desplegar)
+
+Ver `.context/PLAN_VERIFICAR_TOKEN.md` para el diseño completo. Resumen de lo que agrega este `.gs` (no confundir con las herramientas del AI Agent de arriba, que siguen sin cambios):
+
+- **`GET /exec?token=DW-AAMMDD-XXXX`** (`consultarPorToken`, dentro de `doGet`): sin PIN, subconjunto cliente-seguro (nunca WhatsApp/domicilio completo/importes).
+- **`POST /exec` con `action:"check_in"`** (`manejarCheckIn`, rama dedicada en `doPost`): valida PIN contra la Script Property `PIN_OPERADOR` (hay que crearla a mano en el editor de Apps Script — sin ella el endpoint responde error controlado) y marca `Fecha_Llegada_Operador` (col R). Límite de 5 intentos fallidos por token cada 15 min vía `CacheService`.
+- **`POST /exec` con `action:"update_status"`**: bloqueado a propósito (responde error controlado) — evita que caiga al parser genérico y cree una fila fantasma. Sigue sin implementarse hasta que se decida (ver Fase 3 del plan).
 
 ## Propuestas no implementadas (del brief de Copilot, 2026-08-30)
 

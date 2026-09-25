@@ -91,6 +91,7 @@ con la cuenta `<CUENTA_DUENA>`. También puedes instalar la app **AppSheet** (iO
 | D-2 | `Total_Servicios` y `Ultima_Visita` quedan en blanco para clientes creados en AppSheet (ya previsto en la sección 5) | Columnas virtuales desde `DW_Solicitudes` (post-demo) | ⬜ |
 | D-3 | **Formatos de fecha mezclados** en el Sheet: el GAS escribe `2026-09-24 2:27:59`; AppSheet escribe `24/09/2026 2:30:26` en `Fecha_Pago` | Antes de hacer reportes, normalizar el formato (no afecta la demo) | ⬜ |
 | D-4 | **Error de sincronización tras cobrar como recepción** (*"Value '07/18/1900' in field Importe_Cobrado cannot be converted to type Price"*): el cobro registrado por un usuario no-Admin no llegaba al Sheet y la cita se quedaba en `En Ruta`. **Causa:** el Editable_If de `Importe_Cobrado` y `Medio_Pago` dependía del `Estatus` *actual*; al guardar el cobro la acción `_marcar_completado` cambia el estatus a `Completado` en la misma sincronización, y el servidor rechazaba la edición. | Editable_If ahora usa el estatus **anterior**: `OR(USERROLE()="Admin", [_THISROW_BEFORE].[Estatus]="En Ruta")`. Además se recuperó la cita afectada (folio `DW-AAMMDD-XXXX`) completando su cobro como Admin | ✅ **Resuelto y verificado:** ciclo completo como recepción (crear → confirmar → WhatsApp → cobro); el Sheet quedó `Completado`, importe 250, `Efectivo` y fecha de pago |
+| D-6 | **Duplicados por WhatsApp en alta manual desde AppSheet.** `DW_Directorio_Clientes` no tiene ninguna validación que impida dar de alta dos clientes con el mismo `WhatsApp_Principal` (ni cruzando contra `Telefono_Secundario`) cuando el alta es manual desde AppSheet. El GAS sí lo previene (`procesarDirectorioClientes`), pero solo para altas que llegan por Jotform. Hallazgo 2026-09-25: cliente duplicado con mismo WhatsApp (`<WHATSAPP_PLACEHOLDER>`), dos `ID_Cliente` distintos. | **Fix (aplicado por Ulises en el editor de AppSheet, fuera de este repo):** un `Valid_If` en `WhatsApp_Principal` del formulario de alta que use `COUNT(SELECT(DW_Directorio_Clientes[ID_Cliente], [WhatsApp_Principal] = [_THIS])) <= 1`, y el mismo patrón cruzado contra `Telefono_Secundario`. | ⬜ Pendiente de confirmar que Ulises lo aplicó |
 
 
 ### 1.8 Roles y permisos
@@ -102,7 +103,7 @@ El rol se lee con `USERROLE()` (el "In-app role" de la pantalla Compartir); no s
 |---|---|---|---|
 | Nadie borra clientes ni citas desde la app | ✅ | ✅ | *Deletes* apagado en ambas tablas (para todos) |
 | `Estatus` solo lo edita el Admin a mano; recepción avanza con botones | ✅ | ✅ | Editable_If `USERROLE()="Admin"`. Como recepción, el campo no abre selector y los botones Confirmar, WhatsApp y Cobro sí funcionaron |
-| `Importe_Cotizado` solo Admin | ✅ | ⬜ | Editable_If `USERROLE()="Admin"` |
+| `Importe_Cotizado` abierto a recepción (User y Admin), no exclusivo de Admin | ⬜ | ⬜ | **Corrección de política (2026-09-25)**, ver `.context/BUSINESS_RULES.md`. Editable_If pasa de `USERROLE()="Admin"` a sin restricción (o `TRUE`) — pendiente que Ulises lo aplique en AppSheet |
 | `Importe_Cobrado` y `Medio_Pago`: recepción **registra** el cobro (mientras la cita está `En Ruta`); **corregirlo después solo lo hace el Admin** | ✅ | ✅ | Editable_If `OR(USERROLE()="Admin", [_THISROW_BEFORE].[Estatus]="En Ruta")`. Verificado como recepción: captura el cobro y la cita cierra sola; en una cita `Completado` los campos salen bloqueados |
 | `Fecha_Pago` solo Admin (la pone el sistema) | ✅ | ✅ (bloqueado como recepción) | Editable_If `USERROLE()="Admin"` |
 | Recepción puede cancelar citas, con confirmación | ✅ | ✅ (diálogo) | Falta ejecutar una cancelación real |
@@ -178,6 +179,24 @@ Guía y código completo: **"Carga masiva de clientes — Doggy Wash (guía + c�
 | `BackendWebhook.gs` / `Sample.gs` | Apps Script de La Biblia | **No tocar** hasta revisar un diff; luego re-implementar (Nueva versión) |
 | Parche de teléfono y endpoints de `/verificar-token` | Repo y Apps Script de La Biblia | Los prepara Claude Code; tú pegas y re-implementas |
 | Expresiones y reglas de AppSheet | Ya puestas en el editor de AppSheet | Nada que pegar; están documentadas en este playbook |
+
+### 1.13 Feedback interno (diseño, por ejecutar por Ulises en AppSheet)
+
+**Decisión de Ulises (2026-09-25):** AppSheet trae una función nativa de "Feedback for the app creator" (la vista **Feedback** de la barra lateral) — es un buzón de Google hacia los desarrolladores de AppSheet, no hacia Ulises, y no guarda nada consultable en La Biblia. Se reemplaza por una propia hacia `bugs@impletech-ai.com`.
+
+**Nada de esto se toca desde el repo** — es 100% configuración de AppSheet, no requiere Apps Script ni tocar `BackendWebhook.gs`.
+
+1. **Quitar la vista nativa:** en el editor de AppSheet, *Views* → la vista de sistema "Feedback" → desactivarla (o *UX → Options* → apagar "Enable user feedback").
+2. **Pestaña nueva en La Biblia:** `Reportes_Feedback`, columnas: `Fecha` (auto, `NOW()`), `Reportado_Por` (`USEREMAIL()`), `Mensaje` (texto largo), `Estatus_Reporte` (Enum: Nuevo / Revisado / Resuelto, inicial "Nuevo").
+3. **Tabla + vista nueva en AppSheet:** una vista tipo *form* sobre esa tabla, accesible desde el menú, para que Karina/Dulce/Larissa reporten un bug o sugerencia libremente.
+4. **Acción "Send email" (nativa de AppSheet, sin código):** al guardar un registro nuevo en `Reportes_Feedback` (evento *Data Change: Adds*), disparar una acción tipo *"App: send an email"* a `bugs@impletech-ai.com` con el mensaje, quién lo reportó y cuándo.
+
+| Item | Config | Verif |
+|---|---|---|
+| Vista nativa "Feedback" desactivada | ⬜ | ⬜ |
+| Pestaña `Reportes_Feedback` creada | ⬜ | ⬜ |
+| Tabla + vista *form* en AppSheet | ⬜ | ⬜ |
+| Acción "Send email" a `bugs@impletech-ai.com` en *Data Change: Adds* | ⬜ | ⬜ |
 
 ### 1.5 P1 (mismo día si alcanza)
 

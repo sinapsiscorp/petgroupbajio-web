@@ -51,11 +51,11 @@ Esto evita confundir al visitante con funciones de administración y mantiene la
 
 ### **Pestaña 1: DW\_Solicitudes (Bandeja de Entrada Operativa)**
 
-| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H | Col I | Col J | Col K | Col L | Col M | Col N | Col O | Col P | Col Q |
-| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
-| Token\_Servicio | Fecha\_Solicitud | Estatus | ID\_Cliente | Nombre\_Contacto | WhatsApp\_Principal | Domicilio\_Colonia | Cant\_Mascotas | Raza\_Tamanio | Operador\_Asignado | Nombre\_Mascotas | Importe\_Cotizado | Importe\_Cobrado | Medio\_Pago | Fecha\_Pago | Fecha\_Servicio | Franja\_Horaria |
+| Col A | Col B | Col C | Col D | Col E | Col F | Col G | Col H | Col I | Col J | Col K | Col L | Col M | Col N | Col O | Col P | Col Q | Col R |
+| :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- | :---- |
+| Token\_Servicio | Fecha\_Solicitud | Estatus | ID\_Cliente | Nombre\_Contacto | WhatsApp\_Principal | Domicilio\_Colonia | Cant\_Mascotas | Raza\_Tamanio | Operador\_Asignado | Nombre\_Mascotas | Importe\_Cotizado | Importe\_Cobrado | Medio\_Pago | Fecha\_Pago | Fecha\_Servicio | Franja\_Horaria | Fecha\_Llegada\_Operador |
 
-Las columnas K-O son de captura manual por Karina/Dulce (K se llena automáticamente cuando el seguimiento viene del chat de un cliente recurrente ya identificado; L-O aún no tienen ningún mecanismo automatizado — ver pendiente 2 del Hito 5 arriba). Las columnas P-Q las agregó y las llena AppSheet (fecha y franja horaria de la cita agendada); el GAS no las escribe.
+Las columnas K-O son de captura manual por Karina/Dulce (K se llena automáticamente cuando el seguimiento viene del chat de un cliente recurrente ya identificado; L-O aún no tienen ningún mecanismo automatizado — ver pendiente 2 del Hito 5 arriba). Las columnas P-Q las agregó y las llena AppSheet (fecha y franja horaria de la cita agendada); el GAS no las escribe. La columna R (`Fecha_Llegada_Operador`, 2026-09-25) es nueva: timestamp puramente observacional que escribe el handler `action:"check_in"` de `/verificar-token` (Fase 2, diff listo, sin desplegar — ver `.context/PLAN_VERIFICAR_TOKEN.md`); no la escribe ningún otro flujo.
 
 ### **Pestaña 2: DW\_Directorio\_Clientes (CRM y Récord Histórico)**
 
