@@ -87,9 +87,12 @@ export default function VerificarTokenPage() {
         return;
       }
 
+      // Content-Type text/plain (no application/json) a propósito: evita el
+      // preflight CORS (OPTIONS) que Apps Script no responde. El backend
+      // igual hace JSON.parse(e.postData.contents) sin importarle el header.
       const res = await fetch(gasWebhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action: "check_in", token: tokenActivo, pin: pinInput }),
       });
 
@@ -140,9 +143,10 @@ export default function VerificarTokenPage() {
         pin: pinInput,
       };
 
+      // Content-Type text/plain a propósito, ver nota en handleCheckIn.
       const res = await fetch(gasWebhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
       });
 
