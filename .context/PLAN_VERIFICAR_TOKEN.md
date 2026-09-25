@@ -1,6 +1,8 @@
-# Plan: conectar `/verificar-token` a datos reales (análisis, sin implementar)
+# Plan: conectar `/verificar-token` a datos reales
 
-**Estado:** propuesta para discutir con Ulises. Nada de este documento está implementado. Corresponde al pendiente 7/8 de `.context/APPSHEET_SETUP_PLAYBOOK.md` sección 1.12.
+**Estado (2026-09-25):** Fase 1 y Fase 2 ya tienen diff preparado en el repo (`integrations/appscript/BackendWebhook.gs` y `src/app/verificar-token/page.jsx`), **sin desplegar** — Ulises pega el `.gs` a mano y hace "Versión nueva", y configura `NEXT_PUBLIC_GAS_WEBHOOK_URL` en Vercel. Fase 3 sigue siendo propuesta, sin implementar. Corresponde al pendiente 7/8 de `.context/APPSHEET_SETUP_PLAYBOOK.md` sección 1.12.
+
+**Decisión de la junta (2026-09-25):** check-in del operador = **Opción A** — el operador se registra solo desde el sitio con folio + PIN (inciso c, opción 1: columna nueva `Fecha_Llegada_Operador`, ya no es la recomendación "híbrido", es la elección final). No se usa `update_status` para esto — `action:"check_in"` es una acción dedicada, sin tocar `Estatus` ni el enum.
 
 ## 0. Punto de partida (lo que ya existe)
 
@@ -47,10 +49,32 @@ Tres opciones, sin tocar el enum de `Estatus` (que ya es un contrato fijo entre 
 
 ## Plan por fases
 
-**Fase 1 — solo lectura, riesgo bajo.** Implementar únicamente `GET ?token=...` devolviendo el subconjunto cliente-seguro (inciso b). No tocar `doPost`, no tocar `Estatus`. Quitar el modo demo del front cuando la variable de entorno esté configurada (el código ya lo contempla). Deploy: nueva versión del GAS + `NEXT_PUBLIC_GAS_WEBHOOK_URL` en Vercel.
+**Fase 1 — solo lectura, riesgo bajo. ✅ Diff listo (2026-09-25), sin desplegar.** `GET ?token=...` en `doGet` (función `consultarPorToken`) devuelve el subconjunto cliente-seguro (inciso b): `status`, `token`, `estatus`, `fechaServicio`, `franjaHoraria`, `colonia`, `mascotas`, `operador`. No toca `doPost` ni `Estatus`. El front (`page.jsx`) ya usaba la condición correcta (`gasWebhookUrl.includes("TU_DEPLOYMENT_ID")`) para salir de modo demo — no requirió cambio. Se corrigió además la etiqueta de estatus "Finalizado" → "Completado" (no era un valor válido del enum) en el badge y en el botón de `update_status`.
 
-**Fase 2 — check-in del operador, sin tocar `Estatus`.** Agregar la columna R (`Fecha_Llegada_Operador`) y el `action:"check_in"` con PIN validado en servidor (inciso a). Front: un botón "Marcar llegada" separado del badge de estatus.
+- **Limitación conocida — `colonia`:** `DW_Solicitudes` no tiene columna propia de colonia, solo `Domicilio_Colonia` (G) con la dirección completa en texto libre. `extraerColonia()` asume el formato típico "calle, colonia, ciudad, estado, CP" y toma el segundo segmento; si el domicilio no trae comas, devuelve un genérico en vez de arriesgar exponer la dirección completa. Si esto da resultados pobres en producción, la solución de fondo es una columna `Colonia` dedicada (captura separada en el formulario/AppSheet), no un parseo más agresivo del texto libre.
 
-**Fase 3 — opcional, requiere decisión previa de Ulises.** Habilitar `update_status` limitado a `"En Ruta"` (dejar `"Completado"` exclusivo de AppSheet). Corregir la etiqueta "Finalizado". Mover el PIN a Script Properties y agregar límite de intentos fallidos.
+**Fase 2 — check-in del operador, sin tocar `Estatus`. ✅ Diff listo (2026-09-25), sin desplegar.** Opción A/opción 1 del inciso (c), ya decidida en junta:
 
-No se implementa nada de este documento sin autorización explícita — es insumo para decidir, no un commit de código.
+- Columna nueva **R (`Fecha_Llegada_Operador`)** en `DW_Solicitudes`, timestamp puramente observacional.
+- `POST /exec` con `action:"check_in"` (función `manejarCheckIn`): valida PIN → el token existe → escribe con `getRange(fila, 18).setValue(new Date())` puntual, sin tocar los `appendRow` existentes.
+- **PIN movido a Script Properties** (clave `PIN_OPERADOR`, se lee con `PropertiesService.getScriptProperties()`), nunca en el código ni en el bundle — esto también resuelve el punto (a) de este documento. **Ulises debe crear esa Script Property manualmente en el editor de Apps Script antes de que el check-in funcione**; sin ella, el endpoint responde error controlado en vez de fallar.
+- **Límite de intentos fallidos:** `CacheService.getScriptCache()`, 5 intentos por token en una ventana de 15 minutos; al agotarse, bloquea con mensaje genérico. Resuelve el riesgo de fuerza-bruta señalado en el inciso (a).
+- Front: botón **"Marcar llegada"** separado del badge de estatus y de los botones de `update_status` (que siguen bloqueados por el guard de la Tarea 1 — no se tocaron ni se reutilizaron).
+- El guard de la Tarea 1 para `check_in` ya no responde error genérico: ejecuta `manejarCheckIn` directamente. El guard de `update_status` se queda como está.
+
+**Probado en producción (2026-09-25)** contra la implementación real (folio `DW-260906-9934`): `GET ?token=` devuelve el subconjunto correcto; `check_in` con PIN incorrecto bloquea sin escribir; `check_in` con PIN correcto escribe el timestamp completo en columna R (verificado en la barra de fórmulas del Sheet; la celda solo *mostraba* la fecha sin hora por el formato de columna heredado — formatear R como "Fecha y hora" en Sheets si se quiere ver completo).
+
+**Pendiente de verificar en AppSheet (Ulises, después del commit — no tocar desde el repo):**
+- Columna `Fecha_Llegada_Operador` (R) no está en ninguna vista, acción ni Bot de AppSheet a propósito — es puramente observacional, así se diseñó (no debería requerir nada). Confirmar en *Data → Columns* que AppSheet la detectó (correr "Regenerate Structure" si no aparece) y volver a correr el "Deployment Check" para confirmar que no salió ningún error nuevo.
+- Si se decide mostrarla en alguna vista (p. ej. detalle de una cita, para que Karina/Dulce vean si el operador ya llegó), es una decisión de AppSheet aparte — no estaba en el alcance de este brief.
+- Confirmar que `NEXT_PUBLIC_GAS_WEBHOOK_URL` esté configurada en Vercel (Settings → Environment Variables) con la URL de este despliegue, y hacer redeploy si se agrega o cambia (las variables `NEXT_PUBLIC_*` se inyectan en build time).
+
+**Fase 3 — ideas pendientes de decisión (no implementar).** Buenas ideas de Ulises que implican decisiones de producto/costo que no se resuelven en una sesión de código:
+
+- **Notificación automática al cliente al Confirmar** (WhatsApp/correo) con opción de cancelar desde ahí — requiere un proveedor de mensajería (Twilio o similar), no está montado.
+- **Que el operador reporte retraso / "voy en camino"** desde el sitio, sin necesitar una cuenta plena de AppSheet — es la evolución natural de la Fase 2 una vez que exista una identidad real del operador en el sistema (hoy `Operador_Asignado` es texto libre, no una cuenta).
+- **Aviso al cliente de que su token es la garantía del servicio**, como blindaje contra pagos "por fuera" al operador — depende de que la notificación automática ya exista.
+- **Bot automático (plan Core) para mover a `Completado`** sin el tap manual — ya está anotado en `.context/MASTER_PLAN_OPCION_B.md`, sigue pendiente de que Ulises autorice el plan.
+- **Habilitar `update_status` limitado a `"En Ruta"`** (dejar `"Completado"` exclusivo de AppSheet, por la trazabilidad financiera que protege el fix D-4) — el guard de la Tarea 1 sigue bloqueando esta acción por completo; no se implementa sin decisión explícita.
+
+No se implementa nada de la Fase 3 sin autorización explícita de Ulises.
